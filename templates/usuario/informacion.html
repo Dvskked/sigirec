@@ -1,0 +1,555 @@
+{% extends "base.html" %}
+
+{% block title %}Información | SIGIREC{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/informacion.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<div class="dashboard">
+
+    <aside class="sidebar">
+
+        <div class="sidebar-brand">
+            <div class="sidebar-logo">
+                <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo SIGIREC">
+            </div>
+
+            <h1>SIGIREC</h1>
+
+            <p>
+                Sistema de Gestión Inteligente de Recolección de Reciclaje
+            </p>
+        </div>
+
+        <nav class="sidebar-menu">
+
+            <span class="menu-title">MENÚ</span>
+
+            <a href="{{ url_for('dashboard') }}" class="menu-item">
+                <span class="menu-icon">⌂</span>
+                <span>Inicio</span>
+            </a>
+
+            <a href="{{ url_for('informacion') }}" class="menu-item active">
+                <span class="menu-icon">ⓘ</span>
+                <span>Información</span>
+            </a>
+
+            <a href="#" class="menu-item">
+                <span class="menu-icon">⌁</span>
+                <span>Escanear</span>
+            </a>
+
+            <a href="#" class="menu-item">
+                <span class="menu-icon">▣</span>
+                <span>Tienda</span>
+            </a>
+
+        </nav>
+
+        <div class="sidebar-bottom">
+
+            <div class="sidebar-user">
+
+                <div class="user-avatar">
+                    {{ session["nombre_completo"][0] }}
+                </div>
+
+                <div class="user-info">
+                    <strong>{{ session["nombre_completo"] }}</strong>
+                    <span>{{ session["numero_identificacion"] }}</span>
+                </div>
+
+            </div>
+
+            <a href="{{ url_for('logout') }}" class="logout-button">
+                <span>↪</span>
+                Cerrar sesión
+            </a>
+
+        </div>
+
+    </aside>
+
+
+    <main class="dashboard-main">
+
+        <header class="dashboard-header">
+
+            <div>
+
+                <span class="page-label">
+                    INFORMACIÓN
+                </span>
+
+                <h2>
+                    Conoce <span>SIGIREC</span>
+                </h2>
+
+                <p>
+                    Tecnología, reciclaje y recompensas en un mismo sistema.
+                </p>
+
+            </div>
+
+            <div class="header-user">
+
+                <div class="header-avatar">
+                    {{ session["nombre_completo"][0] }}
+                </div>
+
+                <div>
+                    <strong>
+                        {{ session["nombre_completo"] }}
+                    </strong>
+
+                    <span>
+                        ID {{ session["numero_identificacion"] }}
+                    </span>
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <section class="info-hero">
+
+            <div class="info-hero-content">
+
+                <span class="card-label">
+                    SISTEMA DE GESTIÓN INTELIGENTE
+                </span>
+
+                <h1>
+                    Reciclar también puede
+                    <span>generar recompensas.</span>
+                </h1>
+
+                <p>
+                    SIGIREC es un sistema de gestión inteligente de
+                    recolección de reciclaje creado para incentivar la
+                    recuperación de botellas PET mediante tecnología,
+                    automatización e inteligencia artificial.
+                </p>
+
+            </div>
+
+            <div class="info-hero-logo">
+                <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo SIGIREC">
+            </div>
+
+        </section>
+
+
+        <section class="info-grid">
+
+            <article class="info-card-large">
+
+                <span class="card-label">
+                    SOBRE EL PROYECTO
+                </span>
+
+                <h3>
+                    ¿Qué es SIGIREC?
+                </h3>
+
+                <p>
+                    SIGIREC significa
+                    <strong>
+                        Sistema de Gestión Inteligente de Recolección de Reciclaje
+                    </strong>.
+                </p>
+
+                <p>
+                    El proyecto busca incentivar la cultura del reciclaje
+                    mediante un sistema que combina desarrollo de software,
+                    inteligencia artificial y un mecanismo automatizado para
+                    la recepción y almacenamiento de botellas PET.
+                </p>
+
+                <p>
+                    El usuario introduce una botella en el mecanismo,
+                    realiza el proceso de escaneo y el sistema analiza sus
+                    características para determinar los SIGIPUNTOS que
+                    recibirá.
+                </p>
+
+            </article>
+
+
+            <article class="info-card-large developer-card">
+
+                <span class="card-label">
+                    DESARROLLO
+                </span>
+
+                <h3>
+                    ¿Quién desarrolló SIGIREC?
+                </h3>
+
+                <div class="developer-info">
+
+                    <div class="developer-avatar">
+                        AF
+                    </div>
+
+                    <div>
+                        <strong>
+                            Andres Forero
+                        </strong>
+
+                        <span>
+                            Tecnólogo en Análisis y Desarrollo de Software
+                        </span>
+
+                        <span>
+                            Ficha 3139687
+                        </span>
+
+                        <span>
+                            SENA
+                        </span>
+                    </div>
+
+                </div>
+
+                <p>
+                    El desarrollo de software del proyecto está orientado
+                    al diseño, implementación y gestión de la plataforma
+                    SIGIREC, incluyendo su sistema web, base de datos,
+                    gestión de usuarios y la integración con el sistema
+                    de inteligencia artificial.
+                </p>
+
+            </article>
+
+        </section>
+
+
+        <section class="purpose-section">
+
+            <div class="section-title">
+
+                <span class="card-label">
+                    PROPÓSITO
+                </span>
+
+                <h3>
+                    ¿Para qué fue creado SIGIREC?
+                </h3>
+
+                <p>
+                    El sistema busca facilitar la recolección de botellas
+                    PET y motivar a los usuarios mediante un sistema de
+                    recompensas digitales.
+                </p>
+
+            </div>
+
+
+            <div class="purpose-grid">
+
+                <div class="purpose-card">
+
+                    <div class="purpose-icon">
+                        ♻
+                    </div>
+
+                    <h4>
+                        Incentivar el reciclaje
+                    </h4>
+
+                    <p>
+                        Promover la recuperación y correcta disposición
+                        de botellas PET dentro del entorno institucional.
+                    </p>
+
+                </div>
+
+
+                <div class="purpose-card">
+
+                    <div class="purpose-icon">
+                        ◉
+                    </div>
+
+                    <h4>
+                        Utilizar inteligencia artificial
+                    </h4>
+
+                    <p>
+                        Analizar automáticamente las características
+                        de la botella mediante un modelo basado en YOLO.
+                    </p>
+
+                </div>
+
+
+                <div class="purpose-card">
+
+                    <div class="purpose-icon">
+                        +
+                    </div>
+
+                    <h4>
+                        Generar recompensas
+                    </h4>
+
+                    <p>
+                        Asignar SIGIPUNTOS a los usuarios de acuerdo con
+                        las características detectadas durante el reciclaje.
+                    </p>
+
+                </div>
+
+
+                <div class="purpose-card">
+
+                    <div class="purpose-icon">
+                        ⚙
+                    </div>
+
+                    <h4>
+                        Automatizar el proceso
+                    </h4>
+
+                    <p>
+                        Integrar software y mecanismo físico para recibir,
+                        analizar y almacenar las botellas recicladas.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <section class="points-system">
+
+            <div class="section-title">
+
+                <span class="card-label">
+                    SISTEMA DE RECOMPENSAS
+                </span>
+
+                <h3>
+                    ¿Cómo funcionan los SIGIPUNTOS?
+                </h3>
+
+                <p>
+                    Cada botella PET recibe una cantidad base de puntos.
+                    La inteligencia artificial determina si cuenta con
+                    tapa y etiqueta para aplicar las bonificaciones.
+                </p>
+
+            </div>
+
+
+            <div class="points-rules">
+
+                <div class="point-rule">
+
+                    <div class="point-icon">
+                        ♻
+                    </div>
+
+                    <div>
+                        <span>
+                            BOTELLA PET
+                        </span>
+
+                        <strong>
+                            +50
+                        </strong>
+
+                        <small>
+                            SIGIPUNTOS base
+                        </small>
+                    </div>
+
+                </div>
+
+
+                <div class="point-rule">
+
+                    <div class="point-icon">
+                        ●
+                    </div>
+
+                    <div>
+                        <span>
+                            CON TAPA
+                        </span>
+
+                        <strong>
+                            +10
+                        </strong>
+
+                        <small>
+                            Bonificación adicional
+                        </small>
+                    </div>
+
+                </div>
+
+
+                <div class="point-rule">
+
+                    <div class="point-icon">
+                        ▱
+                    </div>
+
+                    <div>
+                        <span>
+                            CON ETIQUETA
+                        </span>
+
+                        <strong>
+                            +5
+                        </strong>
+
+                        <small>
+                            Bonificación adicional
+                        </small>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="points-example">
+
+                <div>
+                    <span>
+                        EJEMPLO
+                    </span>
+
+                    <h4>
+                        Botella con tapa y etiqueta
+                    </h4>
+                </div>
+
+                <div class="calculation">
+
+                    <span>
+                        50
+                    </span>
+
+                    <b>+</b>
+
+                    <span>
+                        10
+                    </span>
+
+                    <b>+</b>
+
+                    <span>
+                        5
+                    </span>
+
+                    <b>=</b>
+
+                    <strong>
+                        65 SIGIPUNTOS
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <section class="institution-section">
+
+            <div>
+
+                <span class="card-label">
+                    ENTORNO DEL PROYECTO
+                </span>
+
+                <h3>
+                    Centro Empresarial y Turístico de Bucaramanga
+                </h3>
+
+                <p>
+                    SIGIREC está planteado como una solución tecnológica
+                    orientada al reciclaje dentro del Centro Empresarial
+                    y Turístico de Bucaramanga, integrando el desarrollo
+                    de software con un mecanismo físico para la recepción
+                    y almacenamiento de botellas.
+                </p>
+
+            </div>
+
+            <div class="institution-badge">
+                <strong>
+                    CSET
+                </strong>
+
+                <span>
+                    Bucaramanga
+                </span>
+            </div>
+
+        </section>
+
+
+        <section class="store-information">
+
+            <div class="store-icon">
+                ▣
+            </div>
+
+            <div>
+
+                <span class="card-label">
+                    TIENDA SIGIREC
+                </span>
+
+                <h3>
+                    Tus puntos pueden convertirse en productos.
+                </h3>
+
+                <p>
+                    Los SIGIPUNTOS acumulados mediante el reciclaje
+                    podrán utilizarse para realizar canjes dentro del
+                    catálogo de productos disponible en la tienda
+                    de SIGIREC.
+                </p>
+
+                <p>
+                    El catálogo podrá incluir productos elaborados
+                    mediante impresión 3D y otros elementos definidos
+                    para el sistema de recompensas.
+                </p>
+
+            </div>
+
+        </section>
+
+
+        <section class="info-footer">
+
+            <span>
+                SIGIREC
+            </span>
+
+            <p>
+                Sistema de Gestión Inteligente de Recolección de Reciclaje
+            </p>
+
+        </section>
+
+    </main>
+
+</div>
+
+{% endblock %}

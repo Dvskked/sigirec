@@ -1,0 +1,498 @@
+{% extends "base.html" %}
+
+{% block title %}Reciclajes | SIGIREC{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin_usuarios.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin-reciclajes.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<div class="admin-layout">
+
+    <aside class="admin-sidebar">
+
+        <div class="admin-brand">
+
+            <div class="admin-logo">
+                <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo SIGIREC">
+            </div>
+
+            <h1>SIGIREC</h1>
+
+            <p>
+                Panel administrativo
+            </p>
+
+        </div>
+
+        <nav class="admin-nav">
+
+            <span class="admin-menu-title">
+                MENÚ ADMINISTRATIVO
+            </span>
+
+            <a href="{{ url_for('admin_dashboard') }}" class="admin-nav-item">
+                <span class="admin-nav-icon">⌂</span>
+                <span>Dashboard</span>
+            </a>
+
+            <a href="{{ url_for('admin_usuarios') }}" class="admin-nav-item">
+                <span class="admin-nav-icon">♙</span>
+                <span>Gestión de usuarios</span>
+            </a>
+
+            <a href="{{ url_for('admin_reciclajes') }}" class="admin-nav-item active">
+                <span class="admin-nav-icon">♻</span>
+                <span>Reciclajes</span>
+            </a>
+
+            <a href="#" class="admin-nav-item">
+                <span class="admin-nav-icon">◉</span>
+                <span>Análisis IA</span>
+            </a>
+
+            <a href="{{ url_for('admin_catalogo') }}" class="admin-nav-item">
+                <span class="admin-nav-icon">▣</span>
+                <span>Catálogo</span>
+            </a>
+
+            <a href="{{ url_for('admin_auditorias') }}"
+            class="admin-nav-item">
+
+                <span class="admin-nav-icon">◷</span>
+                <span>Auditorías</span>
+
+            </a>
+
+        </nav>
+
+        <div class="admin-sidebar-bottom">
+
+            <div class="admin-user-box">
+
+                <div class="admin-avatar">
+                    {{ session["nombre_completo"][0] }}
+                </div>
+
+                <div class="admin-user-info">
+
+                    <strong>
+                        {{ session["nombre_completo"] }}
+                    </strong>
+
+                    <span>
+                        ADMINISTRADOR
+                    </span>
+
+                </div>
+
+            </div>
+
+            <a href="{{ url_for('logout') }}" class="admin-logout">
+                <span>↪</span>
+                <span>Cerrar sesión</span>
+            </a>
+
+        </div>
+
+    </aside>
+
+
+    <main class="admin-main">
+
+        <header class="admin-page-header">
+
+            <div>
+
+                <span class="page-label">
+                    ADMINISTRACIÓN
+                </span>
+
+                <h2>
+                    Reciclajes
+                </h2>
+
+                <p>
+                    Consulta y supervisa los reciclajes registrados
+                    mediante el sistema de inteligencia artificial.
+                </p>
+
+            </div>
+
+            <div class="admin-header-user">
+
+                <div class="admin-header-avatar">
+                    {{ session["nombre_completo"][0] }}
+                </div>
+
+                <div>
+
+                    <strong>
+                        {{ session["nombre_completo"] }}
+                    </strong>
+
+                    <span>
+                        ADMINISTRADOR
+                    </span>
+
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <section class="recycling-stats">
+
+            <div class="recycling-stat-card">
+
+                <span>
+                    RECICLAJES
+                </span>
+
+                <strong>
+                    {{ reciclajes|length }}
+                </strong>
+
+                <p>
+                    Registros realizados
+                </p>
+
+            </div>
+
+
+            <div class="recycling-stat-card">
+
+                <span>
+                    BOTELLAS
+                </span>
+
+                <strong>
+                    {{ reciclajes|selectattr("id_botella")|list|length }}
+                </strong>
+
+                <p>
+                    Botellas identificadas
+                </p>
+
+            </div>
+
+
+            <div class="recycling-stat-card">
+
+                <span>
+                    PUNTOS
+                </span>
+
+                <strong>
+                    {{ reciclajes|sum(attribute="puntos_asignados") }}
+                </strong>
+
+                <p>
+                    SIGIPUNTOS entregados
+                </p>
+
+            </div>
+
+
+            <div class="recycling-stat-card">
+
+                <span>
+                    PENDIENTES
+                </span>
+
+                <strong>
+                    {{ botellas_no_registradas|length }}
+                </strong>
+
+                <p>
+                    Botellas por registrar
+                </p>
+
+            </div>
+
+        </section>
+
+
+        <section class="recycling-container">
+
+            <div class="recycling-header">
+
+                <div>
+
+                    <span class="card-label">
+                        REGISTROS DE RECICLAJE
+                    </span>
+
+                    <h3>
+                        Actividad de reciclaje
+                    </h3>
+
+                    <p>
+                        Historial de botellas procesadas por el sistema.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="recycling-table-container">
+
+                {% if reciclajes %}
+
+                    <table class="recycling-table">
+
+                        <thead>
+
+                            <tr>
+                                <th>USUARIO</th>
+                                <th>BOTELLA</th>
+                                <th>IA</th>
+                                <th>COINCIDENCIA</th>
+                                <th>PUNTOS</th>
+                                <th>FECHA</th>
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            {% for reciclaje in reciclajes %}
+
+                                <tr>
+
+                                    <td>
+
+                                        <div class="recycling-user">
+
+                                            <div class="recycling-avatar">
+                                                {{ reciclaje.nombre_completo[0] }}
+                                            </div>
+
+                                            <div>
+
+                                                <strong>
+                                                    {{ reciclaje.nombre_completo }}
+                                                </strong>
+
+                                                <span>
+                                                    {{ reciclaje.numero_identificacion }}
+                                                </span>
+
+                                            </div>
+
+                                        </div>
+
+                                    </td>
+
+
+                                    <td>
+
+                                        {% if reciclaje.marca %}
+
+                                            <div class="bottle-info">
+
+                                                <strong>
+                                                    {{ reciclaje.marca }}
+                                                </strong>
+
+                                                <span>
+                                                    {{ reciclaje.color_botella or "Sin color" }}
+                                                </span>
+
+                                            </div>
+
+                                        {% else %}
+
+                                            <span class="unknown-bottle">
+                                                No registrada
+                                            </span>
+
+                                        {% endif %}
+
+                                    </td>
+
+
+                                    <td>
+
+                                        {% if reciclaje.etiqueta_detectada %}
+
+                                            <span class="ia-badge">
+                                                Detectada
+                                            </span>
+
+                                        {% else %}
+
+                                            <span class="ia-badge pending">
+                                                No detectada
+                                            </span>
+
+                                        {% endif %}
+
+                                    </td>
+
+
+                                    <td>
+
+                                        {% if reciclaje.coincidencia %}
+
+                                            <span class="match-badge">
+                                                Coincide
+                                            </span>
+
+                                        {% else %}
+
+                                            <span class="match-badge no-match">
+                                                No coincide
+                                            </span>
+
+                                        {% endif %}
+
+                                    </td>
+
+
+                                    <td>
+
+                                        <div class="recycling-points">
+
+                                            <strong>
+                                                +{{ reciclaje.puntos_asignados }}
+                                            </strong>
+
+                                            <span>
+                                                SIGIPUNTOS
+                                            </span>
+
+                                        </div>
+
+                                    </td>
+
+
+                                    <td>
+
+                                        <span class="recycling-date">
+                                            {{ reciclaje.fecha }}
+                                        </span>
+
+                                    </td>
+
+                                </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                {% else %}
+
+                    <div class="empty-recycling">
+
+                        <div class="empty-recycling-icon">
+                            ♻
+                        </div>
+
+                        <h3>
+                            No hay reciclajes registrados
+                        </h3>
+
+                        <p>
+                            Cuando un usuario realice un reciclaje,
+                            aparecerá aquí.
+                        </p>
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+        </section>
+
+
+        <section class="recycling-container pending-container">
+
+            <div class="recycling-header">
+
+                <div>
+
+                    <span class="card-label">
+                        BOTELLAS NO REGISTRADAS
+                    </span>
+
+                    <h3>
+                        Botellas pendientes
+                    </h3>
+
+                    <p>
+                        Botellas detectadas por el sistema que todavía
+                        no están asociadas a una botella del catálogo.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="pending-list">
+
+                {% if botellas_no_registradas %}
+
+                    {% for botella in botellas_no_registradas %}
+
+                        <div class="pending-item">
+
+                            <div class="pending-icon">
+                                ♻
+                            </div>
+
+                            <div class="pending-info">
+
+                                <strong>
+                                    {{ botella.nombre_completo }}
+                                </strong>
+
+                                <span>
+                                    {{ botella.color_detectado }}
+                                    ·
+                                    {{ botella.altura_detectada }} cm
+                                </span>
+
+                            </div>
+
+                            <span class="pending-status">
+                                {{ botella.estado }}
+                            </span>
+
+                        </div>
+
+                    {% endfor %}
+
+                {% else %}
+
+                    <div class="empty-pending">
+
+                        <span>
+                            ✓
+                        </span>
+
+                        <p>
+                            No hay botellas pendientes de registro.
+                        </p>
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,373 @@
+{% extends "base.html" %}
+
+{% block title %}Administración | SIGIREC{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin_usuarios.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin-dashboard.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<div class="admin-dashboard">
+
+    <aside class="admin-sidebar">
+
+        <div class="admin-brand">
+
+            <div class="admin-logo">
+                <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo SIGIREC">
+            </div>
+
+            <h1>SIGIREC</h1>
+
+            <p>
+                Panel administrativo
+            </p>
+
+        </div>
+
+
+        <nav class="admin-menu">
+
+            <span class="admin-menu-title">
+                MENÚ ADMINISTRATIVO
+            </span>
+
+            <a href="{{ url_for('admin_dashboard') }}" class="admin-menu-item active">
+                <span class="admin-menu-icon">⌂</span>
+                <span>Dashboard</span>
+            </a>
+
+            <a href="{{ url_for('admin_usuarios') }}" class="admin-menu-item">
+                <span class="admin-menu-icon">♙</span>
+                <span>Gestión de usuarios</span>
+            </a>
+
+            <a href="{{ url_for('admin_reciclajes') }}" class="admin-menu-item">
+                <span class="admin-menu-icon">♻</span>
+                <span>Reciclajes</span>
+            </a>
+
+            <a href="#" class="admin-menu-item">
+                <span class="admin-menu-icon">◉</span>
+                <span>Análisis IA</span>
+            </a>
+
+            <a href="{{ url_for('admin_catalogo') }}" class="admin-menu-item">
+                <span class="admin-menu-icon">▣</span>
+                <span>Catálogo</span>
+            </a>
+
+            <a href="{{ url_for('admin_auditorias') }}"
+            class="admin-nav-item">
+
+                <span class="admin-nav-icon">◷</span>
+                <span>Auditorías</span>
+
+            </a>
+
+        </nav>
+
+
+        <div class="admin-sidebar-bottom">
+
+            <div class="admin-user">
+
+                <div class="admin-avatar">
+                    {{ session["nombre_completo"][0] }}
+                </div>
+
+                <div class="admin-user-info">
+
+                    <strong>
+                        {{ session["nombre_completo"] }}
+                    </strong>
+
+                    <span>
+                        Administrador
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <a href="{{ url_for('logout') }}" class="admin-logout">
+                <span>↪</span>
+                Cerrar sesión
+            </a>
+
+        </div>
+
+    </aside>
+
+
+    <main class="admin-main">
+
+        <header class="admin-header">
+
+            <div>
+
+                <span class="admin-page-label">
+                    PANEL ADMINISTRATIVO
+                </span>
+
+                <h2>
+                    Bienvenido,
+                    <span>{{ session["nombre_completo"].split()[0] }}</span>
+                </h2>
+
+                <p>
+                    Gestiona y supervisa el funcionamiento de SIGIREC.
+                </p>
+
+            </div>
+
+
+            <div class="admin-header-user">
+
+                <div class="admin-header-avatar">
+                    {{ session["nombre_completo"][0] }}
+                </div>
+
+                <div>
+
+                    <strong>
+                        {{ session["nombre_completo"] }}
+                    </strong>
+
+                    <span>
+                        ADMINISTRADOR
+                    </span>
+
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <section class="admin-stat-grid">
+            <div class="admin-stat-card">
+                <div class="admin-stat-top">
+                    <span>USUARIOS</span>
+                    <div class="admin-stat-icon">♙</div>
+                </div>
+                <strong>{{ estadisticas.usuarios_total }}</strong>
+                <p>Usuarios registrados</p>
+            </div>
+
+            <div class="admin-stat-card">
+                <div class="admin-stat-top">
+                    <span>ESCANEOS IA</span>
+                    <div class="admin-stat-icon">♻</div>
+                </div>
+                <strong>{{ estadisticas.escaneos_ia }}</strong>
+                <p>Análisis realizados</p>
+            </div>
+
+            <div class="admin-stat-card">
+                <div class="admin-stat-top">
+                    
+            </div>
+
+            <div class="admin-stat-card">
+                <div class="admin-stat-top">
+                    <span>PRODUCTOS</span>
+                    <div class="admin-stat-icon">▣</div>
+                </div>
+                <strong>{{ estadisticas.productos_total }}</strong>
+                <p>Productos en catálogo</p>
+            </div>
+        </section>
+
+
+        <section class="admin-content-grid">
+
+            <div class="admin-panel">
+
+                <div class="admin-panel-header">
+
+                    <div>
+
+                        <span class="admin-card-label">
+                            ACTIVIDAD
+                        </span>
+
+                        <h3>
+                            Actividad reciente
+                        </h3>
+
+                    </div>
+
+                    <span class="admin-status">
+                        SISTEMA ACTIVO
+                    </span>
+
+                </div>
+
+
+                <div class="admin-empty">
+
+                    <div class="admin-empty-icon">
+                        ◉
+                    </div>
+
+                    <h4>
+                        No hay actividad registrada
+                    </h4>
+
+                    <p>
+                        Los nuevos registros y movimientos
+                        aparecerán aquí.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="admin-panel">
+
+                <div class="admin-panel-header">
+
+                    <div>
+
+                        <span class="admin-card-label">
+                            SISTEMA
+                        </span>
+
+                        <h3>
+                            Estado de SIGIREC
+                        </h3>
+
+                    </div>
+
+                </div>
+
+
+                <div class="system-status-list">
+
+                    <div class="system-status-item">
+
+                        <div class="system-status-name">
+
+                            <span class="status-dot"></span>
+
+                            <span>
+                                Plataforma web
+                            </span>
+
+                        </div>
+
+                        <strong>
+                            Activa
+                        </strong>
+
+                    </div>
+
+
+                    <div class="system-status-item">
+
+                        <div class="system-status-name">
+
+                            <span class="status-dot"></span>
+
+                            <span>
+                                Base de datos
+                            </span>
+
+                        </div>
+
+                        <strong>
+                            Conectada
+                        </strong>
+
+                    </div>
+
+
+                    <div class="system-status-item">
+
+                        <div class="system-status-name">
+
+                            <span class="status-dot"></span>
+
+                            <span>
+                                Sistema de usuarios
+                            </span>
+
+                        </div>
+
+                        <strong>
+                            Activo
+                        </strong>
+
+                    </div>
+
+
+                    <div class="system-status-item">
+
+                        <div class="system-status-name">
+
+                            <span class="status-dot pending"></span>
+
+                            <span>
+                                Inteligencia artificial
+                            </span>
+
+                        </div>
+
+                        <strong class="pending-text">
+                            Pendiente
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <section class="admin-project-card">
+
+            <div class="admin-project-content">
+
+                <span class="admin-card-label">
+                    SIGIREC
+                </span>
+
+                <h3>
+                    Sistema de Gestión Inteligente
+                    de Recolección de Reciclaje
+                </h3>
+
+                <p>
+                    Desde este panel puedes administrar los usuarios,
+                    supervisar los procesos de reciclaje, consultar
+                    los análisis realizados por inteligencia artificial,
+                    administrar el catálogo de productos y consultar
+                    las estadísticas generales del sistema.
+                </p>
+
+            </div>
+
+
+            <div class="admin-project-logo">
+
+                <img
+                    src="{{ url_for('static', filename='img/logo.png') }}"
+                    alt="Logo SIGIREC"
+                >
+
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+{% endblock %}

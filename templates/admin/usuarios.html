@@ -1,0 +1,759 @@
+{% extends "base.html" %}
+
+{% block title %}Gestión de Usuarios | SIGIREC{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin_usuarios.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<div class="admin-layout">
+
+    <aside class="admin-sidebar">
+
+        <div class="admin-brand">
+
+            <div class="admin-logo">
+                <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo SIGIREC">
+            </div>
+
+            <h1>SIGIREC</h1>
+
+            <p>
+                Panel administrativo
+            </p>
+
+        </div>
+
+        <nav class="admin-nav">
+
+            <span class="admin-menu-title">
+                MENÚ ADMINISTRATIVO
+            </span>
+
+            <a href="{{ url_for('admin_dashboard') }}" class="admin-nav-item">
+                <span class="admin-nav-icon">⌂</span>
+                <span>Dashboard</span>
+            </a>
+
+            <a href="{{ url_for('admin_usuarios') }}" class="admin-nav-item active">
+                <span class="admin-nav-icon">♙</span>
+                <span>Gestión de usuarios</span>
+            </a>
+
+            <a href="{{ url_for('admin_reciclajes') }}" class="admin-nav-item">
+                <span class="admin-nav-icon">♻</span>
+                <span>Reciclajes</span>
+            </a>
+
+            <a href="#" class="admin-nav-item">
+                <span class="admin-nav-icon">◉</span>
+                <span>Análisis IA</span>
+            </a>
+
+            <a href="{{ url_for('admin_catalogo') }}" class="admin-nav-item">
+                <span class="admin-nav-icon">▣</span>
+                <span>Catálogo</span>
+            </a>
+
+            <a href="{{ url_for('admin_auditorias') }}"
+            class="admin-nav-item">
+
+                <span class="admin-nav-icon">◷</span>
+                <span>Auditorías</span>
+
+            </a>
+
+        </nav>
+
+        <div class="admin-sidebar-bottom">
+
+            <div class="admin-user-box">
+
+                <div class="admin-avatar">
+                    {{ session["nombre_completo"][0] }}
+                </div>
+
+                <div class="admin-user-info">
+
+                    <strong>
+                        {{ session["nombre_completo"] }}
+                    </strong>
+
+                    <span>
+                        ADMINISTRADOR
+                    </span>
+
+                </div>
+
+            </div>
+
+            <a href="{{ url_for('logout') }}" class="admin-logout">
+                <span>↪</span>
+                <span>Cerrar sesión</span>
+            </a>
+
+        </div>
+
+    </aside>
+
+    <main class="admin-main">
+
+        <header class="admin-page-header">
+
+            <div>
+
+                <span class="page-label">
+                    ADMINISTRACIÓN
+                </span>
+
+                <h2>
+                    Gestión de usuarios
+                </h2>
+
+                <p>
+                    Consulta, administra y gestiona la información
+                    de los usuarios registrados en SIGIREC.
+                </p>
+
+            </div>
+
+            <div class="admin-header-user">
+
+                <div class="admin-header-avatar">
+                    {{ session["nombre_completo"][0] }}
+                </div>
+
+                <div>
+
+                    <strong>
+                        {{ session["nombre_completo"] }}
+                    </strong>
+
+                    <span>
+                        ADMINISTRADOR
+                    </span>
+
+                </div>
+
+            </div>
+
+        </header>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+
+            {% if messages %}
+
+                <div class="flash-container">
+
+                    {% for category, message in messages %}
+
+                        <div class="flash-message {{ category }}">
+                            {{ message }}
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+            {% endif %}
+
+        {% endwith %}
+
+        <section class="users-container">
+
+            <div class="users-header">
+
+                <div>
+
+                    <span class="card-label">
+                        USUARIOS REGISTRADOS
+                    </span>
+
+                    <h3>
+                        Administración de usuarios
+                    </h3>
+
+                    <p>
+                        Visualiza y administra todos los usuarios
+                        registrados en el sistema.
+                    </p>
+
+                </div>
+
+                <div class="users-count">
+                    {{ usuarios|length }} usuarios
+                </div>
+
+            </div>
+
+            <div class="users-table-container">
+
+                {% if usuarios %}
+
+                    <table class="users-table">
+
+                        <thead>
+
+                            <tr>
+
+                                <th>USUARIO</th>
+                                <th>IDENTIFICACIÓN</th>
+                                <th>ROL</th>
+                                <th>PROGRAMA / FICHA</th>
+                                <th>TIPO</th>
+                                <th>SIGIPUNTOS</th>
+                                <th>ESCANEOS IA</th>
+                                <th>ACCIÓN</th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            {% for usuario in usuarios %}
+
+                                <tr>
+
+                                    <td>
+
+                                        <div class="table-user">
+
+                                            <div class="table-avatar">
+                                                {{ usuario.nombre_completo[0] }}
+                                            </div>
+
+                                            <div class="table-user-info">
+
+                                                <strong>
+                                                    {{ usuario.nombre_completo }}
+                                                </strong>
+
+                                                <span>
+                                                    {{ usuario.correo }}
+                                                </span>
+
+                                            </div>
+
+                                        </div>
+
+                                    </td>
+
+                                    <td>
+                                        {{ usuario.numero_identificacion }}
+                                    </td>
+
+                                    <td>
+
+                                        <span class="role-badge">
+                                            {{ usuario.rol }}
+                                        </span>
+
+                                    </td>
+
+                                    <td>
+
+                                        <div class="formation-info">
+
+                                            <strong>
+                                                {{ usuario.programa_formacion }}
+                                            </strong>
+
+                                            <span>
+                                                Ficha {{ usuario.numero_ficha }}
+                                            </span>
+
+                                        </div>
+
+                                    </td>
+
+                                    <td>
+
+                                        {% if usuario.tipo_usuario == "ADMINISTRADOR" %}
+
+                                            <span class="type-badge admin">
+                                                ADMINISTRADOR
+                                            </span>
+
+                                        {% else %}
+
+                                            <span class="type-badge">
+                                                USUARIO
+                                            </span>
+
+                                        {% endif %}
+
+                                    </td>
+
+                                    <td>
+
+                                        <div class="points-table-value">
+
+                                            <strong class="points-value">
+                                                {{ usuario.puntos_totales }}
+                                            </strong>
+
+                                            <span class="points-label">
+                                                SIGIPUNTOS
+                                            </span>
+
+                                        </div>
+
+                                    </td>
+
+                                    <td>
+
+                                        <div class="scan-table-value">
+
+                                            <strong class="scan-value">
+                                                {{ usuario.escaneos_ia }}
+                                            </strong>
+
+                                            <span>
+                                                análisis
+                                            </span>
+
+                                        </div>
+
+                                    </td>
+
+                                    <td>
+
+                                        <a
+                                            href="#usuario-{{ usuario.id_usuario }}"
+                                            class="manage-button"
+                                        >
+                                            Gestionar
+                                        </a>
+
+                                    </td>
+
+                                </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                {% else %}
+
+                    <div class="empty-users">
+
+                        <div class="empty-users-icon">
+                            ♙
+                        </div>
+
+                        <h3>
+                            No hay usuarios registrados
+                        </h3>
+
+                        <p>
+                            Cuando existan usuarios registrados,
+                            aparecerán aquí.
+                        </p>
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+        </section>
+
+        {% if usuarios %}
+
+            <section class="management-list">
+
+                <div class="management-list-header">
+
+                    <span class="card-label">
+                        ADMINISTRACIÓN INDIVIDUAL
+                    </span>
+
+                    <h3>
+                        Gestionar usuarios
+                    </h3>
+
+                    <p>
+                        Selecciona la información de cada usuario
+                        para modificar sus datos o administrar sus SIGIPUNTOS.
+                    </p>
+
+                </div>
+
+                {% for usuario in usuarios %}
+
+                    <section
+                        id="usuario-{{ usuario.id_usuario }}"
+                        class="user-management-card"
+                    >
+
+                        <div class="management-header">
+
+                            <div class="management-user-title">
+
+                                <span class="card-label">
+                                    GESTIONAR USUARIO
+                                </span>
+
+                                <h3>
+                                    {{ usuario.nombre_completo }}
+                                </h3>
+
+                                <p>
+                                    ID interno:
+                                    {{ usuario.id_usuario }}
+                                </p>
+
+                            </div>
+
+                            <div class="management-points">
+
+                                <span>
+                                    SALDO ACTUAL
+                                </span>
+
+                                <strong>
+                                    {{ usuario.puntos_totales }}
+                                </strong>
+
+                                <small>
+                                    SIGIPUNTOS
+                                </small>
+
+                            </div>
+
+                        </div>
+
+                        <div class="management-grid">
+
+                            <div class="management-section">
+
+                                <div class="section-title">
+                                    INFORMACIÓN PERSONAL
+                                </div>
+
+                                <form
+                                    action="{{ url_for('editar_usuario', id_usuario=usuario.id_usuario) }}"
+                                    method="POST"
+                                >
+
+                                    <div class="form-grid">
+
+                                        <div class="form-group">
+
+                                            <label>
+                                                Nombre completo
+                                            </label>
+
+                                            <input
+                                                type="text"
+                                                name="nombre_completo"
+                                                value="{{ usuario.nombre_completo }}"
+                                                required
+                                            >
+
+                                        </div>
+
+                                        <div class="form-group">
+
+                                            <label>
+                                                Identificación
+                                            </label>
+
+                                            <input
+                                                type="text"
+                                                name="numero_identificacion"
+                                                value="{{ usuario.numero_identificacion }}"
+                                                required
+                                            >
+
+                                        </div>
+
+                                        <div class="form-group">
+
+                                            <label>
+                                                Correo
+                                            </label>
+
+                                            <input
+                                                type="email"
+                                                name="correo"
+                                                value="{{ usuario.correo }}"
+                                                required
+                                            >
+
+                                        </div>
+
+                                        <div class="form-group">
+
+                                            <label>
+                                                Teléfono
+                                            </label>
+
+                                            <input
+                                                type="text"
+                                                name="telefono"
+                                                value="{{ usuario.telefono or '' }}"
+                                            >
+
+                                        </div>
+
+                                        <div class="form-group">
+
+                                            <label>
+                                                Rol
+                                            </label>
+
+                                            <select name="rol" required>
+
+                                                <option
+                                                    value="APRENDIZ"
+                                                    {% if usuario.rol == "APRENDIZ" %}selected{% endif %}
+                                                >
+                                                    Aprendiz
+                                                </option>
+
+                                                <option
+                                                    value="INSTRUCTOR"
+                                                    {% if usuario.rol == "INSTRUCTOR" %}selected{% endif %}
+                                                >
+                                                    Instructor
+                                                </option>
+
+                                                <option
+                                                    value="AREA_ADMINISTRATIVA"
+                                                    {% if usuario.rol == "AREA_ADMINISTRATIVA" %}selected{% endif %}
+                                                >
+                                                    Administración
+                                                </option>
+
+                                                <option
+                                                    value="EXTERNO"
+                                                    {% if usuario.rol == "EXTERNO" %}selected{% endif %}
+                                                >
+                                                    Externo
+                                                </option>
+
+                                            </select>
+
+                                        </div>
+
+                                        <div class="form-group">
+
+                                            <label>
+                                                Tipo de usuario
+                                            </label>
+
+                                            <select name="tipo_usuario" required>
+
+                                                <option
+                                                    value="USUARIO"
+                                                    {% if usuario.tipo_usuario == "USUARIO" %}selected{% endif %}
+                                                >
+                                                    Usuario
+                                                </option>
+
+                                                <option
+                                                    value="ADMINISTRADOR"
+                                                    {% if usuario.tipo_usuario == "ADMINISTRADOR" %}selected{% endif %}
+                                                >
+                                                    Administrador
+                                                </option>
+
+                                            </select>
+
+                                        </div>
+
+                                        <div class="form-group full">
+
+                                            <label>
+                                                Programa de formación
+                                            </label>
+
+                                            <input
+                                                type="text"
+                                                name="programa_formacion"
+                                                value="{{ usuario.programa_formacion }}"
+                                                required
+                                            >
+
+                                        </div>
+
+                                        <div class="form-group">
+
+                                            <label>
+                                                Número de ficha
+                                            </label>
+
+                                            <input
+                                                type="text"
+                                                name="numero_ficha"
+                                                value="{{ usuario.numero_ficha }}"
+                                                required
+                                            >
+
+                                        </div>
+
+                                    </div>
+
+                                    <button
+                                        type="submit"
+                                        class="save-button"
+                                    >
+                                        Guardar cambios
+                                    </button>
+
+                                </form>
+
+                            </div>
+
+                            <div class="management-section points-section">
+
+                                <div class="section-title">
+                                    GESTIÓN DE SIGIPUNTOS
+                                </div>
+
+                                <div class="current-balance">
+
+                                    <span>
+                                        Saldo actual
+                                    </span>
+
+                                    <strong>
+                                        {{ usuario.puntos_totales }}
+                                    </strong>
+
+                                    <small>
+                                        SIGIPUNTOS
+                                    </small>
+
+                                </div>
+
+                                <form
+                                    action="{{ url_for('agregar_puntos', id_usuario=usuario.id_usuario) }}"
+                                    method="POST"
+                                    class="points-form"
+                                >
+
+                                    <label>
+                                        Agregar puntos
+                                    </label>
+
+                                    <input
+                                        type="number"
+                                        name="puntos"
+                                        min="1"
+                                        placeholder="Cantidad"
+                                        required
+                                    >
+
+                                    <input
+                                        type="text"
+                                        name="motivo"
+                                        placeholder="Motivo de la bonificación"
+                                    >
+
+                                    <button
+                                        type="submit"
+                                        class="add-points-button"
+                                    >
+                                        + Agregar puntos
+                                    </button>
+
+                                </form>
+
+                                <form
+                                    action="{{ url_for('quitar_puntos', id_usuario=usuario.id_usuario) }}"
+                                    method="POST"
+                                    class="points-form"
+                                >
+
+                                    <label>
+                                        Quitar puntos
+                                    </label>
+
+                                    <input
+                                        type="number"
+                                        name="puntos"
+                                        min="1"
+                                        max="{{ usuario.puntos_totales }}"
+                                        placeholder="Cantidad"
+                                        required
+                                    >
+
+                                    <input
+                                        type="text"
+                                        name="motivo"
+                                        placeholder="Motivo del descuento"
+                                    >
+
+                                    <button
+                                        type="submit"
+                                        class="remove-points-button"
+                                    >
+                                        − Quitar puntos
+                                    </button>
+
+                                </form>
+
+                                <div class="user-summary">
+
+                                    <div>
+
+                                        <span>
+                                            Escaneos IA
+                                        </span>
+
+                                        <strong>
+                                            {{ usuario.escaneos_ia }}
+                                        </strong>
+
+                                    </div>
+
+                                    <div>
+
+                                        <span>
+                                            Identificación
+                                        </span>
+
+                                        <strong>
+                                            {{ usuario.numero_identificacion }}
+                                        </strong>
+
+                                    </div>
+
+                                    <div>
+
+                                        <span>
+                                            Rol
+                                        </span>
+
+                                        <strong>
+                                            {{ usuario.rol }}
+                                        </strong>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </section>
+
+                {% endfor %}
+
+            </section>
+
+        {% endif %}
+
+    </main>
+
+</div>
+
+{% endblock %}

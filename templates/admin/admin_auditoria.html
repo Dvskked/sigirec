@@ -1,0 +1,571 @@
+{% extends "base.html" %}
+
+{% block title %}Auditorías | SIGIREC{% endblock %}
+
+{% block extra_css %}
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin_usuarios.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin_auditoria.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<div class="admin-layout">
+
+```
+<!-- SIDEBAR -->
+
+<aside class="admin-sidebar">
+
+    <div class="admin-brand">
+
+        <div class="admin-logo">
+            <img
+                src="{{ url_for('static', filename='img/logo.png') }}"
+                alt="Logo SIGIREC"
+            >
+        </div>
+
+        <h1>SIGIREC</h1>
+
+        <p>
+            Panel administrativo
+        </p>
+
+    </div>
+
+
+    <nav class="admin-nav">
+
+        <span class="admin-menu-title">
+            MENÚ ADMINISTRATIVO
+        </span>
+
+
+        <a href="{{ url_for('admin_dashboard') }}"
+           class="admin-nav-item">
+
+            <span class="admin-nav-icon">⌂</span>
+            <span>Dashboard</span>
+
+        </a>
+
+
+        <a href="{{ url_for('admin_usuarios') }}"
+           class="admin-nav-item">
+
+            <span class="admin-nav-icon">♙</span>
+            <span>Gestión de usuarios</span>
+
+        </a>
+
+
+        <a href="{{ url_for('admin_reciclajes') }}"
+           class="admin-nav-item">
+
+            <span class="admin-nav-icon">♻</span>
+            <span>Reciclajes</span>
+
+        </a>
+
+
+        <a href="#"
+           class="admin-nav-item">
+
+            <span class="admin-nav-icon">◉</span>
+            <span>Análisis IA</span>
+
+        </a>
+
+
+        <a href="{{ url_for('admin_catalogo') }}"
+           class="admin-nav-item">
+
+            <span class="admin-nav-icon">▣</span>
+            <span>Catálogo</span>
+
+        </a>
+
+
+        <a href="{{ url_for('admin_auditorias') }}"
+           class="admin-nav-item active">
+
+            <span class="admin-nav-icon">◷</span>
+            <span>Auditorías</span>
+
+        </a>
+
+    </nav>
+
+
+    <div class="admin-sidebar-bottom">
+
+        <div class="admin-user-box">
+
+            <div class="admin-avatar">
+                {{ session["nombre_completo"][0] }}
+            </div>
+
+            <div class="admin-user-info">
+
+                <strong>
+                    {{ session["nombre_completo"] }}
+                </strong>
+
+                <span>
+                    ADMINISTRADOR
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <a href="{{ url_for('logout') }}"
+           class="admin-logout">
+
+            <span>↪</span>
+            <span>Cerrar sesión</span>
+
+        </a>
+
+    </div>
+
+</aside>
+
+
+<!-- CONTENIDO PRINCIPAL -->
+
+<main class="admin-main">
+
+
+    <!-- HEADER -->
+
+    <header class="admin-page-header">
+
+        <div>
+
+            <span class="page-label">
+                ADMINISTRACIÓN
+            </span>
+
+            <h2>
+                Auditorías
+            </h2>
+
+            <p>
+                Consulta y supervisa las acciones importantes
+                realizadas dentro de SIGIREC.
+            </p>
+
+        </div>
+
+
+        <div class="admin-header-user">
+
+            <div class="admin-header-avatar">
+                {{ session["nombre_completo"][0] }}
+            </div>
+
+            <div>
+
+                <strong>
+                    {{ session["nombre_completo"] }}
+                </strong>
+
+                <span>
+                    ADMINISTRADOR
+                </span>
+
+            </div>
+
+        </div>
+
+    </header>
+
+
+    <!-- ESTADÍSTICAS -->
+
+    <section class="audit-stats">
+
+
+        <div class="audit-stat-card">
+
+            <div class="audit-stat-top">
+
+                <span>
+                    TOTAL
+                </span>
+
+                <div class="audit-stat-icon">
+                    ◷
+                </div>
+
+            </div>
+
+            <strong>
+                {{ estadisticas.total or 0 }}
+            </strong>
+
+            <p>
+                Acciones registradas
+            </p>
+
+        </div>
+
+
+        <div class="audit-stat-card">
+
+            <div class="audit-stat-top">
+
+                <span>
+                    USUARIOS
+                </span>
+
+                <div class="audit-stat-icon">
+                    ♙
+                </div>
+
+            </div>
+
+            <strong>
+                {{ estadisticas.usuarios or 0 }}
+            </strong>
+
+            <p>
+                Acciones sobre usuarios
+            </p>
+
+        </div>
+
+
+        <div class="audit-stat-card">
+
+            <div class="audit-stat-top">
+
+                <span>
+                    RECICLAJES
+                </span>
+
+                <div class="audit-stat-icon">
+                    ♻
+                </div>
+
+            </div>
+
+            <strong>
+                {{ estadisticas.reciclajes or 0 }}
+            </strong>
+
+            <p>
+                Acciones de reciclaje
+            </p>
+
+        </div>
+
+
+        <div class="audit-stat-card">
+
+            <div class="audit-stat-top">
+
+                <span>
+                    CATÁLOGO
+                </span>
+
+                <div class="audit-stat-icon">
+                    ▣
+                </div>
+
+            </div>
+
+            <strong>
+                {{ estadisticas.catalogo or 0 }}
+            </strong>
+
+            <p>
+                Acciones del catálogo
+            </p>
+
+        </div>
+
+    </section>
+
+
+    <!-- TABLA DE AUDITORÍAS -->
+
+    <section class="audit-container">
+
+        <div class="audit-header">
+
+            <div>
+
+                <span class="card-label">
+                    REGISTRO DEL SISTEMA
+                </span>
+
+                <h3>
+                    Historial de actividad
+                </h3>
+
+                <p>
+                    Aquí se muestran las acciones registradas
+                    por el sistema de auditoría.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="audit-table-container">
+
+            {% if auditorias %}
+
+                <table class="audit-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>FECHA</th>
+                            <th>USUARIO</th>
+                            <th>ACCIÓN</th>
+                            <th>TABLA</th>
+                            <th>REGISTRO</th>
+                            <th>DESCRIPCIÓN</th>
+                            <th>IP</th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for auditoria in auditorias %}
+
+                            <tr>
+
+                                <!-- FECHA -->
+
+                                <td>
+
+                                    <span class="audit-date">
+                                        {{ auditoria.fecha }}
+                                    </span>
+
+                                </td>
+
+
+                                <!-- USUARIO -->
+
+                                <td>
+
+                                    {% if auditoria.nombre_completo %}
+
+                                        <div class="audit-user">
+
+                                            <div class="audit-avatar">
+                                                {{ auditoria.nombre_completo[0] }}
+                                            </div>
+
+                                            <div>
+
+                                                <strong>
+                                                    {{ auditoria.nombre_completo }}
+                                                </strong>
+
+                                                <span>
+                                                    {{ auditoria.numero_identificacion }}
+                                                </span>
+
+                                            </div>
+
+                                        </div>
+
+                                    {% else %}
+
+                                        <span class="system-user">
+                                            Sistema
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <!-- ACCIÓN -->
+
+                                <td>
+
+                                    {% if auditoria.accion %}
+
+                                        <span class="audit-action">
+                                            {{ auditoria.accion }}
+                                        </span>
+
+                                    {% else %}
+
+                                        <span class="audit-record empty">
+                                            —
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <!-- TABLA AFECTADA -->
+
+                                <td>
+
+                                    {% if auditoria.tabla_afectada %}
+
+                                        <span class="audit-table-badge">
+                                            {{ auditoria.tabla_afectada }}
+                                        </span>
+
+                                    {% else %}
+
+                                        <span class="audit-record empty">
+                                            —
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <!-- ID REGISTRO -->
+
+                                <td>
+
+                                    {% if auditoria.id_registro %}
+
+                                        <span class="audit-record">
+                                            #{{ auditoria.id_registro }}
+                                        </span>
+
+                                    {% else %}
+
+                                        <span class="audit-record empty">
+                                            —
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <!-- DESCRIPCIÓN -->
+
+                                <td>
+
+                                    <div class="audit-description">
+
+                                        {% if auditoria.descripcion %}
+                                            {{ auditoria.descripcion }}
+                                        {% else %}
+                                            Sin descripción
+                                        {% endif %}
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- IP -->
+
+                                <td>
+
+                                    {% if auditoria.ip %}
+
+                                        <span class="audit-ip">
+                                            {{ auditoria.ip }}
+                                        </span>
+
+                                    {% else %}
+
+                                        <span class="audit-record empty">
+                                            —
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+
+            {% else %}
+
+                <!-- SIN REGISTROS -->
+
+                <div class="audit-empty">
+
+                    <div class="audit-empty-icon">
+                        ◷
+                    </div>
+
+                    <h3>
+                        No hay auditorías registradas
+                    </h3>
+
+                    <p>
+                        Todavía no existen acciones registradas
+                        en la tabla de auditoría.
+                    </p>
+
+                </div>
+
+            {% endif %}
+
+        </div>
+
+    </section>
+
+
+    <!-- INFORMACIÓN -->
+
+    <section class="audit-info">
+
+        <div class="audit-info-icon">
+            ✓
+        </div>
+
+        <div>
+
+            <span>
+                CONTROL Y SEGURIDAD
+            </span>
+
+            <h3>
+                Registro de actividad del sistema
+            </h3>
+
+            <p>
+                SIGIREC registra las acciones importantes
+                realizadas sobre usuarios, reciclajes y
+                catálogo. Cada registro permite identificar
+                quién realizó la acción, qué elemento fue
+                afectado, cuándo ocurrió y desde qué dirección
+                IP se realizó.
+            </p>
+
+        </div>
+
+    </section>
+
+
+</main>
+```
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+{% block title %}Inicio | SIGIREC{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+{% endblock %}
+{% block content %}
+<div class="dashboard">
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <div class="sidebar-logo">
+                <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo SIGIREC">
+            </div>
+            <h1>SIGIREC</h1>
+            <p>Sistema de Gestión Inteligente de Recolección de Reciclaje</p>
+        </div>
+        <nav class="sidebar-menu">
+            <span class="menu-title">MENÚ</span>
+            <a href="{{ url_for('dashboard') }}" class="menu-item active">
+                <span class="menu-icon">⌂</span>
+                <span>Inicio</span>
+            </a>
+            <a href="{{ url_for('informacion') }}" class="menu-item">
+                <span class="menu-icon">ⓘ</span>
+                <span>Información</span>
+            </a>
+            <a href="#" class="menu-item">
+                <span class="menu-icon">⌁</span>
+                <span>Escanear</span>
+            </a>
+            <a href="#" class="menu-item">
+                <span class="menu-icon">▣</span>
+                <span>Tienda</span>
+            </a>
+        </nav>
+        <div class="sidebar-bottom">
+            <div class="sidebar-user">
+                <div class="user-avatar">{{ usuario.nombre_completo[0] }}</div>
+                <div class="user-info">
+                    <strong>{{ usuario.nombre_completo }}</strong>
+                    <span>{{ usuario.numero_identificacion }}</span>
+                </div>
+            </div>
+            <a href="{{ url_for('logout') }}" class="logout-button">
+                <span>↪</span>
+                Cerrar sesión
+            </a>
+        </div>
+    </aside>
+
+    <main class="dashboard-main">
+        <header class="dashboard-header">
+            <div>
+                <span class="page-label">PANEL DE USUARIO</span>
+                <h2>Bienvenido, <span>{{ usuario.nombre_completo.split()[0] }}</span></h2>
+                <p>Gestiona tus reciclajes y consulta tus SIGIPUNTOS.</p>
+            </div>
+            <div class="header-user">
+                <div class="header-avatar">{{ usuario.nombre_completo[0] }}</div>
+                <div>
+                    <strong>{{ usuario.nombre_completo }}</strong>
+                    <span>ID {{ usuario.numero_identificacion }}</span>
+                </div>
+            </div>
+        </header>
+
+        <section class="points-card">
+            <div class="points-information">
+                <span class="card-label">MIS SIGIPUNTOS</span>
+                <div class="points-number">
+                    <strong>{{ usuario.puntos_totales }}</strong>
+                </div>
+                <p>Puntos disponibles</p>
+            </div>
+            <div class="points-icon">♻</div>
+        </section>
+
+        <section class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span>Botellas recicladas</span>
+                    <div class="stat-icon">♻</div>
+                </div>
+                <strong>{{ usuario.botellas_recicladas }}</strong>
+                <p>Total de reciclajes</p>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span>Puntos obtenidos</span>
+                    <div class="stat-icon">+</div>
+                </div>
+                <strong>{{ usuario.puntos_obtenidos }}</strong>
+                <p>SIGIPUNTOS obtenidos por reciclaje</p>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span>Último reciclaje</span>
+                    <div class="stat-icon">◷</div>
+                </div>
+
+                {% if usuario.ultimo_reciclaje %}
+                    <strong>{{ usuario.ultimo_reciclaje.strftime('%d/%m/%Y') }}</strong>
+                    <p>{{ usuario.ultimo_reciclaje.strftime('%H:%M') }}</p>
+                {% else %}
+                    <strong>—</strong>
+                    <p>Aún no has reciclado</p>
+                {% endif %}
+            </div>
+        </section>
+
+        <section class="dashboard-grid">
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <div>
+                        <span class="card-label">ACTIVIDAD</span>
+                        <h3>Últimos reciclajes</h3>
+                    </div>
+                    <a href="#">Ver todos</a>
+                </div>
+
+                {% if usuario.botellas_recicladas > 0 %}
+                    <div class="activity-summary">
+                        <div class="empty-icon">♻</div>
+                        <h4>Has realizado {{ usuario.botellas_recicladas }} reciclaje{% if usuario.botellas_recicladas != 1 %}s{% endif %}</h4>
+                        <p>Has obtenido {{ usuario.puntos_obtenidos }} SIGIPUNTOS mediante tus reciclajes.</p>
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <div class="empty-icon">♻</div>
+                        <h4>No hay reciclajes todavía</h4>
+                        <p>Cuando recicles una botella, aparecerá aquí.</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="dashboard-card info-card">
+                <span class="card-label">SOBRE SIGIREC</span>
+                <h3>Recicla inteligentemente.</h3>
+                <p>SIGIREC es un sistema inteligente diseñado para incentivar el reciclaje mediante tecnología de inteligencia artificial.</p>
+                <p>Deposita tu botella, escanéala y recibe SIGIPUNTOS que podrás utilizar posteriormente en nuestra tienda.</p>
+
+                <div class="info-highlight">
+                    <span>BOTELLA PET</span>
+                    <strong>+50</strong>
+                    <small>SIGIPUNTOS base</small>
+                </div>
+
+                <div class="info-bonus">
+                    <div>
+                        <span>CON TAPA</span>
+                        <strong>+10</strong>
+                    </div>
+                    <div>
+                        <span>CON ETIQUETA</span>
+                        <strong>+5</strong>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="scan-banner">
+            <div>
+                <span class="card-label">¿TIENES UNA BOTELLA?</span>
+                <h3>Convierte tu reciclaje en SIGIPUNTOS.</h3>
+                <p>Deposita tu botella y comienza el proceso de escaneo.</p>
+            </div>
+
+            <a href="#" class="scan-button">
+                <span>⌁</span>
+                Escanear botella
+            </a>
+        </section>
+    </main>
+</div>
+{% endblock %}
