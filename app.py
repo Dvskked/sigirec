@@ -1,6 +1,35 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash
-import mysql
+import cv2
+import numpy as np
+import base64
+
+from flask import (
+    Flask,
+    request,
+    jsonify,
+    session,
+    redirect,
+    url_for,
+    render_template,
+    flash
+)
+
+from ultralytics import YOLO
+
 from conexion import obtener_conexion
+
+
+
+
+model = YOLO(
+    r"C:\Users\siriu\OneDrive\Escritorio\SigiRec (4)\SigiRec\runs\detect\train-5\weights\best.pt"
+)
+
+
+print("======================================")
+print("MODELO SIGIREC CARGADO")
+print("RUTA:", model.ckpt_path)
+print("CLASES:", model.names)
+print("======================================")
 
 app = Flask(__name__)
 app.secret_key = "SIGIREC_CAMBIAR_ESTA_CLAVE"
@@ -308,6 +337,739 @@ def informacion():
     return render_template(
         "usuario/informacion.html"
     )
+
+
+@app.route("/escanear")
+def escanear():
+
+    if "id_usuario" not in session:
+        return redirect(url_for("login"))
+
+    if session.get("tipo_usuario") == "ADMINISTRADOR":
+        return redirect(url_for("admin_dashboard"))
+
+    conexion = obtener_conexion()
+
+    if conexion is None:
+        flash(
+            "No fue posible conectar con la base de datos.",
+            "danger"
+        )
+
+        return redirect(url_for("dashboard"))
+
+    cursor = conexion.cursor(dictionary=True)
+
+    try:
+
+        cursor.execute(
+            """
+            SELECT *
+            FROM usuarios
+            WHERE id_usuario = %s
+            """,
+            (session["id_usuario"],)
+        )
+
+        usuario = cursor.fetchone()
+
+        if usuario is None:
+            return redirect(url_for("logout"))
+
+        return render_template(
+            "usuario/escanear.html",
+            usuario=usuario
+        )
+
+    finally:
+
+        cursor.close()
+        conexion.close()
+
+
+
+# API DE ESCANEO Y REGISTRO DEL RECICLAJE
+
+@app.route("/api/escanear", methods=["POST"])
+def api_escanear():
+
+    if "id_usuario" not in session:
+        return jsonify({
+            "error": "Sesión no válida."
+        }), 401
+
+    if "imagen" not in request.files:
+        return jsonify({
+            "error": "No se recibió ninguna imagen."
+        }), 400
+
+    archivo = request.files["imagen"]
+
+    if archivo.filename == "":
+        return jsonify({
+            "error": "La imagen está vacía."
+        }), 400
+
+    try:
+
+        # =====================================================
+        # LEER IMAGEN
+        # =====================================================
+
+        datos = archivo.read()
+
+        imagen_array = np.frombuffer(
+            datos,
+            np.uint8
+        )
+
+        frame = cv2.imdecode(
+            imagen_array,
+            cv2.IMREAD_COLOR
+        )
+
+        if frame is None:
+            return jsonify({
+                "error": "No fue posible procesar la imagen."
+            }), 400
+
+
+        # =====================================================
+        # ANALIZAR CON YOLO
+        # =====================================================
+
+        resultados = model(
+            frame,
+            conf=0.10
+        )
+
+        resultado = resultados[0]
+
+        clases_detectadas = []
+
+        confianza_maxima = 0.0
+
+        for box in resultado.boxes:
+
+            clase_id = int(box.cls[0])
+
+            confianza = float(box.conf[0])
+
+            nombre_clase = (
+                resultado.names[clase_id]
+                .lower()
+            )
+
+            clases_detectadas.append({
+                "clase": nombre_clase,
+                "confianza": round(
+                    confianza,
+                    4
+                )
+            })
+
+            if confianza > confianza_maxima:
+                confianza_maxima = confianza
+
+
+        print("OBJETOS DETECTADOS:")
+        print(clases_detectadas)
+
+
+        # =====================================================
+        # DETERMINAR OBJETOS
+        # =====================================================
+
+        clases = [
+            item["clase"]
+            for item in clases_detectadas
+        ]
+
+        botella_detectada = (
+            "botella" in clases
+        )
+
+        tapa_detectada = (
+            "tapa" in clases
+        )
+
+        etiqueta_detectada = (
+            "etiqueta" in clases
+        )
+
+
+        # =====================================================
+        # CALCULAR PUNTOS
+        # =====================================================
+
+        puntos_base = 0
+        puntos_tapa = 0
+        puntos_etiqueta = 0
+        puntos_totales = 0
+
+        if botella_detectada:
+
+            puntos_base = 50
+
+            if tapa_detectada:
+                puntos_tapa = 10
+
+            if etiqueta_detectada:
+                puntos_etiqueta = 5
+
+            puntos_totales = (
+                puntos_base
+                + puntos_tapa
+                + puntos_etiqueta
+            )
+
+
+        # =====================================================
+        # DIBUJAR RESULTADO YOLO
+        # =====================================================
+
+        annotated_frame = resultado.plot()
+
+
+        # =====================================================
+        # CONVERTIR IMAGEN A BASE64
+        # =====================================================
+
+        _, buffer = cv2.imencode(
+            ".jpg",
+            annotated_frame
+        )
+
+        imagen_base64 = base64.b64encode(
+            buffer
+        ).decode("utf-8")
+
+
+        # =====================================================
+        # SI NO HAY BOTELLA
+        # =====================================================
+
+        if not botella_detectada:
+
+            return jsonify({
+
+                "success": False,
+
+                "botella_detectada": False,
+
+                "titulo":
+                    "Botella no reconocida",
+
+                "mensaje":
+                    "No se detectó una botella válida.",
+
+                "puntos": 0,
+
+                "detecciones":
+                    clases_detectadas,
+
+                "imagen":
+                    imagen_base64
+
+            })
+
+
+        # =====================================================
+        # BOTELLA DETECTADA
+        #
+        # IMPORTANTE:
+        # AQUÍ TODAVÍA NO SE GUARDA NADA EN MYSQL.
+        # =====================================================
+
+        return jsonify({
+
+            "success": True,
+
+            "botella_detectada": True,
+
+            "titulo":
+                "Botella reconocida",
+
+            "mensaje":
+                "La botella fue reconocida correctamente.",
+
+            "puntos":
+                puntos_totales,
+
+            "puntos_base":
+                puntos_base,
+
+            "puntos_tapa":
+                puntos_tapa,
+
+            "puntos_etiqueta":
+                puntos_etiqueta,
+
+            "confianza":
+                confianza_maxima * 100,
+
+            "tapa_detectada":
+                tapa_detectada,
+
+            "etiqueta_detectada":
+                etiqueta_detectada,
+
+            "detecciones":
+                clases_detectadas,
+
+            "imagen":
+                imagen_base64
+
+        })
+
+
+    except Exception as e:
+
+        print(
+            "ERROR ANALIZANDO:",
+            e
+        )
+
+        return jsonify({
+            "error": str(e)
+        }), 500
+
+
+
+@app.route("/api/registrar-reciclaje", methods=["POST"])
+def registrar_reciclaje():
+
+    if "id_usuario" not in session:
+
+        return jsonify({
+            "error": "Sesión no válida."
+        }), 401
+
+
+    datos = request.get_json()
+
+    if not datos:
+
+        return jsonify({
+            "error": "No se recibieron datos."
+        }), 400
+
+
+    # =====================================================
+    # RECIBIR DATOS DEL ANÁLISIS
+    # =====================================================
+
+    botella_detectada = datos.get(
+        "botella_detectada",
+        False
+    )
+
+    tapa_detectada = datos.get(
+        "tapa_detectada",
+        False
+    )
+
+    etiqueta_detectada = datos.get(
+        "etiqueta_detectada",
+        False
+    )
+
+    confianza = datos.get(
+        "confianza",
+        0
+    )
+
+    puntos_base = datos.get(
+        "puntos_base",
+        0
+    )
+
+    puntos_tapa = datos.get(
+        "puntos_tapa",
+        0
+    )
+
+    puntos_etiqueta = datos.get(
+        "puntos_etiqueta",
+        0
+    )
+
+    puntos_totales = datos.get(
+        "puntos",
+        0
+    )
+
+
+    # =====================================================
+    # SEGURIDAD
+    # =====================================================
+
+    if not botella_detectada:
+
+        return jsonify({
+            "error":
+                "No se puede registrar un reciclaje "
+                "sin una botella detectada."
+        }), 400
+
+
+    conexion = obtener_conexion()
+
+    if conexion is None:
+
+        return jsonify({
+            "error":
+                "No fue posible conectar con "
+                "la base de datos."
+        }), 500
+
+
+    cursor = conexion.cursor()
+
+
+    try:
+
+        # =================================================
+        # BUSCAR BOTELLA PET
+        # =================================================
+
+        cursor.execute(
+            """
+            SELECT id_botella
+            FROM botellas
+            WHERE nombre = %s
+            LIMIT 1
+            """,
+            ("Botella PET",)
+        )
+
+        botella = cursor.fetchone()
+
+        id_botella = None
+
+        if botella:
+            id_botella = botella[0]
+
+
+        # =================================================
+        # INSERTAR ANÁLISIS IA
+        # =================================================
+
+        consulta_analisis = """
+            INSERT INTO analisis_ia (
+                id_usuario,
+                id_botella,
+                imagen,
+                botella_detectada,
+                tapa_detectada,
+                etiqueta_detectada,
+                confianza,
+                puntos_base,
+                puntos_tapa,
+                puntos_etiqueta,
+                puntos_totales,
+                estado_analisis,
+                modelo_ia,
+                version_modelo
+            )
+            VALUES (
+                %s, %s, %s, %s, %s, %s, %s,
+                %s, %s, %s, %s,
+                %s, %s, %s
+            )
+        """
+
+
+        valores_analisis = (
+
+            session["id_usuario"],
+
+            id_botella,
+
+            None,
+
+            1 if botella_detectada else 0,
+
+            1 if tapa_detectada else 0,
+
+            1 if etiqueta_detectada else 0,
+
+            confianza,
+
+            puntos_base,
+
+            puntos_tapa,
+
+            puntos_etiqueta,
+
+            puntos_totales,
+
+            "IDENTIFICADO",
+
+            "YOLO",
+
+            "train-5"
+
+        )
+
+
+        cursor.execute(
+            consulta_analisis,
+            valores_analisis
+        )
+
+
+        id_analisis = cursor.lastrowid
+
+
+        # =================================================
+        # OBTENER SALDO ACTUAL
+        # =================================================
+
+        cursor.execute(
+            """
+            SELECT COALESCE(
+                SUM(puntos),
+                0
+            )
+            FROM movimientos_puntos
+            WHERE id_usuario = %s
+            """,
+            (
+                session["id_usuario"],
+            )
+        )
+
+
+        resultado_saldo = (
+            cursor.fetchone()
+        )
+
+
+        saldo_anterior = int(
+            resultado_saldo[0] or 0
+        )
+
+
+        saldo_nuevo = (
+            saldo_anterior
+            + puntos_totales
+        )
+
+
+        # =================================================
+        # MOVIMIENTO DE PUNTOS
+        # =================================================
+
+        motivo = (
+            "Reciclaje detectado por IA: "
+            "botella"
+        )
+
+
+        if tapa_detectada:
+
+            motivo += " + tapa"
+
+
+        if etiqueta_detectada:
+
+            motivo += " + etiqueta"
+
+
+        consulta_movimiento = """
+            INSERT INTO movimientos_puntos (
+                id_usuario,
+                id_analisis,
+                tipo_movimiento,
+                puntos,
+                motivo
+            )
+            VALUES (
+                %s,
+                %s,
+                'RECICLAJE',
+                %s,
+                %s
+            )
+        """
+
+
+        cursor.execute(
+            consulta_movimiento,
+            (
+                session["id_usuario"],
+                id_analisis,
+                puntos_totales,
+                motivo
+            )
+        )
+
+
+        # =================================================
+        # GENERAR COMPROBANTE
+        # =================================================
+
+        numero_comprobante = (
+            "SIGI-"
+            + str(id_analisis).zfill(6)
+        )
+
+
+        # =================================================
+        # INSERTAR COMPROBANTE
+        # =================================================
+
+        consulta_comprobante = """
+            INSERT INTO comprobantes_reciclaje (
+                id_analisis,
+                id_usuario,
+                numero_comprobante,
+                saldo_anterior,
+                puntos_ganados,
+                saldo_nuevo
+            )
+            VALUES (
+                %s,
+                %s,
+                %s,
+                %s,
+                %s,
+                %s
+            )
+        """
+
+
+        cursor.execute(
+            consulta_comprobante,
+            (
+                id_analisis,
+                session["id_usuario"],
+                numero_comprobante,
+                saldo_anterior,
+                puntos_totales,
+                saldo_nuevo
+            )
+        )
+
+
+        # =================================================
+        # CONFIRMAR
+        # =================================================
+
+        conexion.commit()
+
+
+        # =================================================
+        # RESPUESTA
+        # =================================================
+
+        return jsonify({
+
+            "success": True,
+
+            "mensaje":
+                "Botella registrada correctamente "
+                "y puntos asignados.",
+
+            "puntos":
+                puntos_totales,
+
+            "saldo_anterior":
+                saldo_anterior,
+
+            "saldo_nuevo":
+                saldo_nuevo,
+
+            "numero_comprobante":
+                numero_comprobante
+
+        })
+
+
+    except Exception as e:
+
+        conexion.rollback()
+
+        print(
+            "ERROR REGISTRANDO RECICLAJE:",
+            e
+        )
+
+        return jsonify({
+            "error": str(e)
+        }), 500
+
+
+    finally:
+
+        cursor.close()
+
+        conexion.close()
+
+
+
+@app.route("/catalogo")
+def catalogo():
+
+    if "id_usuario" not in session:
+        return redirect(url_for("login"))
+
+    if session.get("tipo_usuario") == "ADMINISTRADOR":
+        return redirect(url_for("admin_dashboard"))
+
+    conexion = obtener_conexion()
+
+    if conexion is None:
+        flash(
+            "No fue posible conectar con la base de datos.",
+            "danger"
+        )
+        return redirect(url_for("dashboard"))
+
+    cursor = conexion.cursor(dictionary=True)
+
+    try:
+
+        cursor.execute(
+            """
+            SELECT *
+            FROM usuarios
+            WHERE id_usuario = %s
+            """,
+            (session["id_usuario"],)
+        )
+
+        usuario = cursor.fetchone()
+
+        if usuario is None:
+            flash(
+                "No se encontró la información del usuario.",
+                "danger"
+            )
+            return redirect(url_for("dashboard"))
+
+        return render_template(
+            "usuario/catalogo.html",
+            usuario=usuario
+        )
+
+    except Exception as e:
+
+        print("ERROR CATÁLOGO:", e)
+
+        flash(
+            f"No fue posible cargar el catálogo: {e}",
+            "danger"
+        )
+
+        return redirect(url_for("dashboard"))
+
+    finally:
+
+        cursor.close()
+        conexion.close()
+
 
 # ==========================================
 # DASHBOARD ADMINISTRADOR
@@ -683,6 +1445,39 @@ def admin_editar_usuario(id_usuario):
             valores
         )
 
+        # ==================================
+        # REGISTRAR AUDITORÍA
+        # ==================================
+
+        descripcion_auditoria = (
+            f"Se modificaron los datos del usuario "
+            f"{nombre_completo} "
+            f"(ID: {id_usuario})."
+        )
+
+        cursor.execute(
+            """
+            INSERT INTO auditoria
+            (
+                id_usuario,
+                accion,
+                tabla_afectada,
+                id_registro,
+                descripcion,
+                ip
+            )
+            VALUES (%s, %s, %s, %s, %s, %s)
+            """,
+            (
+                session.get("id_usuario"),
+                "ACTUALIZAR",
+                "usuarios",
+                id_usuario,
+                descripcion_auditoria,
+                request.remote_addr
+            )
+        )
+
         conexion.commit()
 
         # Si el administrador editó su propia información,
@@ -834,126 +1629,6 @@ def admin_eliminar_usuario(id_usuario):
     finally:
         cursor.close()
         conexion.close()
-
-
-# ==========================================
-# GESTIÓN DE USUARIOS
-# ==========================================
-@app.route("/admin/usuarios")
-
-
-# ==========================================
-# EDITAR USUARIO
-# ==========================================
-@app.route("/admin/usuarios/editar/<int:id_usuario>", methods=["POST"])
-def editar_usuario(id_usuario):
-    if "id_usuario" not in session:
-        return redirect(url_for("login"))
-
-    if session.get("tipo_usuario") != "ADMINISTRADOR":
-        return redirect(url_for("dashboard"))
-
-    nombre_completo = request.form.get("nombre_completo", "").strip()
-    numero_identificacion = request.form.get("numero_identificacion", "").strip()
-    correo = request.form.get("correo", "").strip()
-    telefono = request.form.get("telefono", "").strip()
-    rol = request.form.get("rol", "").strip()
-    programa_formacion = request.form.get("programa_formacion", "").strip()
-    numero_ficha = request.form.get("numero_ficha", "").strip()
-    tipo_usuario = request.form.get("tipo_usuario", "").strip()
-
-    roles_validos = [
-        "APRENDIZ",
-        "INSTRUCTOR",
-        "AREA_ADMINISTRATIVA",
-        "EXTERNO"
-    ]
-
-    tipos_usuario_validos = [
-        "USUARIO",
-        "ADMINISTRADOR"
-    ]
-
-    if not all([
-        nombre_completo,
-        numero_identificacion,
-        correo,
-        rol,
-        programa_formacion,
-        numero_ficha
-    ]):
-        flash("Completa todos los campos obligatorios.", "danger")
-        return redirect(url_for("admin_usuarios"))
-
-    if rol not in roles_validos:
-        flash("El rol seleccionado no es válido.", "danger")
-        return redirect(url_for("admin_usuarios"))
-
-    if tipo_usuario not in tipos_usuario_validos:
-        flash("El tipo de usuario seleccionado no es válido.", "danger")
-        return redirect(url_for("admin_usuarios"))
-
-    conexion = obtener_conexion()
-
-    if conexion is None:
-        flash("No fue posible conectar con la base de datos.", "danger")
-        return redirect(url_for("admin_usuarios"))
-
-    cursor = conexion.cursor()
-
-    try:
-        consulta = """
-            UPDATE usuarios
-            SET
-                nombre_completo = %s,
-                numero_identificacion = %s,
-                correo = %s,
-                telefono = %s,
-                rol = %s,
-                programa_formacion = %s,
-                numero_ficha = %s,
-                tipo_usuario = %s
-            WHERE id_usuario = %s
-        """
-
-        valores = (
-            nombre_completo,
-            numero_identificacion,
-            correo,
-            telefono,
-            rol,
-            programa_formacion,
-            numero_ficha,
-            tipo_usuario,
-            id_usuario
-        )
-
-        cursor.execute(consulta, valores)
-        conexion.commit()
-
-        flash("Usuario actualizado correctamente.", "success")
-
-    except Exception as e:
-        conexion.rollback()
-
-        print("ERROR EDITANDO USUARIO:", e)
-
-        if "Duplicate entry" in str(e):
-            flash(
-                "La identificación o el correo ya pertenecen a otro usuario.",
-                "danger"
-            )
-        else:
-            flash(
-                f"No fue posible actualizar el usuario: {e}",
-                "danger"
-            )
-
-    finally:
-        cursor.close()
-        conexion.close()
-
-    return redirect(url_for("admin_usuarios"))
 
 
 # ==========================================
@@ -1137,87 +1812,57 @@ def admin_reciclajes():
     if session.get("tipo_usuario") != "ADMINISTRADOR":
         return redirect(url_for("dashboard"))
 
-    conexion = None
-    cursor = None
+    conexion = obtener_conexion()
+
+    if conexion is None:
+        flash(
+            "No fue posible conectar con la base de datos.",
+            "danger"
+        )
+        return redirect(url_for("admin_dashboard"))
+
+    cursor = conexion.cursor(dictionary=True)
 
     try:
 
-        conexion = mysql.connector.connect(
-            host="localhost",
-            user="root",
-            password="",
-            database="sigirec"
-        )
-
-        cursor = conexion.cursor(dictionary=True)
-
         # ==========================================
-        # RECICLAJES REGISTRADOS MEDIANTE IA
+        # ANÁLISIS IA REGISTRADOS
         # ==========================================
 
         cursor.execute("""
             SELECT
-                ri.id_registro,
-                ri.id_usuario,
-                ri.id_botella,
-                ri.imagen_analizada,
-                ri.color_detectado,
-                ri.altura_detectada,
-                ri.etiqueta_detectada,
-                ri.tapa_detectada,
-                ri.coincidencia,
-                ri.puntos_asignados,
-                ri.fecha,
+                a.id_analisis,
+                a.id_usuario,
+                a.botella_detectada,
+                a.tapa_detectada,
+                a.etiqueta_detectada,
+                a.confianza,
+                a.puntos_base,
+                a.puntos_tapa,
+                a.puntos_etiqueta,
+                a.puntos_totales,
+                a.estado_analisis,
+                a.fecha_analisis,
 
                 u.nombre_completo,
                 u.numero_identificacion,
 
-                b.marca,
-                b.color AS color_botella,
-                b.puntos AS puntos_botella
+                cr.numero_comprobante,
+                cr.saldo_anterior,
+                cr.saldo_nuevo
 
-            FROM registros_ia ri
+            FROM analisis_ia a
 
             INNER JOIN usuarios u
-                ON ri.id_usuario = u.id_usuario
+                ON a.id_usuario = u.id_usuario
 
-            LEFT JOIN botellas b
-                ON ri.id_botella = b.id_botella
+            LEFT JOIN comprobantes_reciclaje cr
+                ON cr.id_analisis = a.id_analisis
 
-            ORDER BY ri.fecha DESC
+            ORDER BY a.fecha_analisis DESC
         """)
 
         reciclajes = cursor.fetchall()
-
-
-        # ==========================================
-        # BOTELLAS NO REGISTRADAS
-        # ==========================================
-
-        cursor.execute("""
-            SELECT
-                bnr.id_no_registrada,
-                bnr.id_usuario,
-                bnr.imagen,
-                bnr.color_detectado,
-                bnr.altura_detectada,
-                bnr.etiqueta_detectada,
-                bnr.tapa_detectada,
-                bnr.estado,
-                bnr.fecha,
-
-                u.nombre_completo,
-                u.numero_identificacion
-
-            FROM botellas_no_registradas bnr
-
-            INNER JOIN usuarios u
-                ON bnr.id_usuario = u.id_usuario
-
-            ORDER BY bnr.fecha DESC
-        """)
-
-        botellas_no_registradas = cursor.fetchall()
 
 
         # ==========================================
@@ -1226,8 +1871,7 @@ def admin_reciclajes():
 
         return render_template(
             "admin/admin_reciclajes.html",
-            reciclajes=reciclajes,
-            botellas_no_registradas=botellas_no_registradas
+            reciclajes=reciclajes
         )
 
 
@@ -1237,18 +1881,14 @@ def admin_reciclajes():
 
         return render_template(
             "admin/admin_reciclajes.html",
-            reciclajes=[],
-            botellas_no_registradas=[]
+            reciclajes=[]
         )
 
 
     finally:
 
-        if cursor:
-            cursor.close()
-
-        if conexion:
-            conexion.close()
+        cursor.close()
+        conexion.close()
 
 
 
@@ -1317,6 +1957,8 @@ def admin_catalogo():
 
         cursor.close()
         conexion.close()
+
+
 
 
 
@@ -1398,7 +2040,7 @@ def admin_auditorias():
         cursor.execute("""
             SELECT COUNT(*) AS total
             FROM auditoria
-            WHERE tabla_afectada = 'registros_ia'
+            WHERE tabla_afectada = 'analisis_ia'
         """)
 
         reciclajes = cursor.fetchone()["total"]
