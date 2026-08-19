@@ -3,7 +3,6 @@
 {% block title %}Auditorías | SIGIREC{% endblock %}
 
 {% block extra_css %}
-
 <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_usuarios.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_auditoria.css') }}">
 {% endblock %}
@@ -12,559 +11,543 @@
 
 <div class="admin-layout">
 
-
 <!-- SIDEBAR -->
-
 <aside class="admin-sidebar">
-
     <div class="admin-brand">
-
         <div class="admin-logo">
-            <img
-                src="{{ url_for('static', filename='img/logo.png') }}"
-                alt="Logo SIGIREC"
-            >
+            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo SIGIREC">
         </div>
-
         <h1>SIGIREC</h1>
-
-        <p>
-            Panel administrativo
-        </p>
-
+        <p>Panel administrativo</p>
     </div>
 
-
     <nav class="admin-nav">
+        <span class="admin-menu-title">MENÚ ADMINISTRATIVO</span>
 
-        <span class="admin-menu-title">
-            MENÚ ADMINISTRATIVO
-        </span>
-
-
-        <a href="{{ url_for('admin_dashboard') }}"
-           class="admin-nav-item">
-
+        <a href="{{ url_for('admin_dashboard') }}" class="admin-nav-item">
             <span class="admin-nav-icon">⌂</span>
             <span>Dashboard</span>
-
         </a>
-
-
-        <a href="{{ url_for('admin_usuarios') }}"
-           class="admin-nav-item">
-
+        <a href="{{ url_for('admin_usuarios') }}" class="admin-nav-item">
             <span class="admin-nav-icon">♙</span>
             <span>Gestión de usuarios</span>
-
         </a>
-
-
-        <a href="{{ url_for('admin_reciclajes') }}"
-           class="admin-nav-item">
-
+        <a href="{{ url_for('admin_reciclajes') }}" class="admin-nav-item">
             <span class="admin-nav-icon">♻</span>
             <span>Reciclajes</span>
-
         </a>
-
-
-        <a href="{{ url_for('admin_reciclajes') }}"
-           class="admin-nav-item">
-
-            <span class="admin-nav-icon">◉</span>
-            <span>Análisis IA</span>
-
+        <a href="{{ url_for('admin_movimientos') }}" class="admin-nav-item">
+            <span class="admin-nav-icon">⇄</span>
+            <span>Movimientos</span>
         </a>
-
-
-        <a href="{{ url_for('admin_catalogo') }}"
-           class="admin-nav-item">
-
+        <a href="{{ url_for('admin_catalogo') }}" class="admin-nav-item">
             <span class="admin-nav-icon">▣</span>
             <span>Catálogo</span>
-
         </a>
-
-
-        <a href="{{ url_for('admin_auditorias') }}"
-           class="admin-nav-item active">
-
+        <a href="{{ url_for('admin_auditorias') }}" class="admin-nav-item active">
             <span class="admin-nav-icon">◷</span>
             <span>Auditorías</span>
-
         </a>
-
     </nav>
 
-
     <div class="admin-sidebar-bottom">
-
         <div class="admin-user-box">
-
             <div class="admin-avatar">
                 {{ session["nombre_completo"][0] }}
             </div>
-
             <div class="admin-user-info">
-
-                <strong>
-                    {{ session["nombre_completo"] }}
-                </strong>
-
-                <span>
-                    ADMINISTRADOR
-                </span>
-
+                <strong>{{ session["nombre_completo"] }}</strong>
+                <span>ADMINISTRADOR</span>
             </div>
-
         </div>
-
-
-        <a href="{{ url_for('logout') }}"
-           class="admin-logout">
-
+        <a href="{{ url_for('logout') }}" class="admin-logout">
             <span>↪</span>
             <span>Cerrar sesión</span>
-
         </a>
-
     </div>
-
 </aside>
 
 
 <!-- CONTENIDO PRINCIPAL -->
-
 <main class="admin-main">
 
-
     <!-- HEADER -->
-
     <header class="admin-page-header">
-
         <div>
-
-            <span class="page-label">
-                ADMINISTRACIÓN
-            </span>
-
-            <h2>
-                Auditorías
-            </h2>
-
-            <p>
-                Consulta y supervisa las acciones importantes
-                realizadas dentro de SIGIREC.
-            </p>
-
+            <span class="page-label">ADMINISTRACIÓN</span>
+            <h2>Auditorías</h2>
+            <p>Consulta y supervisa las acciones importantes realizadas dentro de SIGIREC.</p>
         </div>
-
-
-        <div class="admin-header-user">
-
-            <div class="admin-header-avatar">
-                {{ session["nombre_completo"][0] }}
-            </div>
-
-            <div>
-
-                <strong>
-                    {{ session["nombre_completo"] }}
-                </strong>
-
-                <span>
-                    ADMINISTRADOR
-                </span>
-
-            </div>
-
-        </div>
-
     </header>
 
-
     <!-- ESTADÍSTICAS -->
-
     <section class="audit-stats">
-
-
         <div class="audit-stat-card">
-
             <div class="audit-stat-top">
-
-                <span>
-                    TOTAL
-                </span>
-
-                <div class="audit-stat-icon">
-                    ◷
-                </div>
-
+                <span>ACCIONES</span>
+                <div class="audit-stat-icon">◷</div>
             </div>
-
-            <strong>
-                {{ estadisticas.total or 0 }}
-            </strong>
-
-            <p>
-                Acciones registradas
-            </p>
-
+            <strong>{{ estadisticas.total_acciones or 0 }}</strong>
+            <p>Acciones registradas</p>
         </div>
 
-
         <div class="audit-stat-card">
-
             <div class="audit-stat-top">
-
-                <span>
-                    USUARIOS
-                </span>
-
-                <div class="audit-stat-icon">
-                    ♙
-                </div>
-
+                <span>USUARIOS</span>
+                <div class="audit-stat-icon">♙</div>
             </div>
-
-            <strong>
-                {{ estadisticas.usuarios or 0 }}
-            </strong>
-
-            <p>
-                Acciones sobre usuarios
-            </p>
-
+            <strong>{{ estadisticas.total_usuarios or 0 }}</strong>
+            <p>Usuarios registrados</p>
         </div>
 
-
         <div class="audit-stat-card">
-
             <div class="audit-stat-top">
-
-                <span>
-                    RECICLAJES
-                </span>
-
-                <div class="audit-stat-icon">
-                    ♻
-                </div>
-
+                <span>CANJES</span>
+                <div class="audit-stat-icon">⇄</div>
             </div>
-
-            <strong>
-                {{ estadisticas.reciclajes or 0 }}
-            </strong>
-
-            <p>
-                Acciones de reciclaje
-            </p>
-
+            <strong>{{ estadisticas.total_canjes or 0 }}</strong>
+            <p>Canjes realizados</p>
         </div>
 
-
         <div class="audit-stat-card">
-
             <div class="audit-stat-top">
-
-                <span>
-                    CATÁLOGO
-                </span>
-
-                <div class="audit-stat-icon">
-                    ▣
-                </div>
-
+                <span>ANÁLISIS IA</span>
+                <div class="audit-stat-icon">◎</div>
             </div>
+            <strong>{{ estadisticas.total_analisis_ia or 0 }}</strong>
+            <p>Análisis de reciclaje</p>
+        </div>
+    </section>
 
-            <strong>
-                {{ estadisticas.catalogo or 0 }}
-            </strong>
 
-            <p>
-                Acciones del catálogo
-            </p>
+    <!-- ============================== -->
+    <!-- RANKING DE PUNTOS              -->
+    <!-- ============================== -->
 
+    <section class="audit-ranking-section">
+        <div class="audit-ranking-header">
+            <div class="audit-ranking-trophy">🏆</div>
+            <div>
+                <span class="card-label">RANKING SIGIREC</span>
+                <h3>Top usuarios con más SIGIPUNTOS</h3>
+                <p>Clasificación de los usuarios que más han reciclado y canjeado puntos.</p>
+            </div>
+        </div>
+
+        {% if ranking %}
+        <div class="ranking-table-wrap">
+            <table class="ranking-table">
+                <thead>
+                    <tr>
+                        <th class="ranking-th-pos">#</th>
+                        <th class="ranking-th-user">USUARIO</th>
+                        <th class="ranking-th-ficha">FICHA</th>
+                        <th class="ranking-th-analisis">ANÁLISIS IA</th>
+                        <th class="ranking-th-puntos">SIGIPUNTOS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in ranking %}
+                    <tr class="
+                        {% if loop.index == 1 %}ranking-row-1
+                        {% elif loop.index == 2 %}ranking-row-2
+                        {% elif loop.index == 3 %}ranking-row-3
+                        {% endif %}
+                    ">
+                        <td class="ranking-position">
+                            {% if loop.index == 1 %}
+                                <span class="pos-badge pos-1">🥇</span>
+                            {% elif loop.index == 2 %}
+                                <span class="pos-badge pos-2">🥈</span>
+                            {% elif loop.index == 3 %}
+                                <span class="pos-badge pos-3">🥉</span>
+                            {% else %}
+                                <span class="pos-badge pos-other">{{ loop.index }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="ranking-user">
+                            <div class="ranking-avatar">{{ r.nombre_completo[0] }}</div>
+                            <strong>{{ r.nombre_completo }}</strong>
+                        </td>
+                        <td class="ranking-ficha">{{ r.numero_identificacion }}</td>
+                        <td class="ranking-analisis">
+                            <span class="ranking-badge-analisis">{{ r.total_analisis }}</span>
+                        </td>
+                        <td class="ranking-puntos">
+                            <span class="ranking-puntos-value">{{ r.puntos_totales }}</span>
+                            <span class="ranking-puntos-label">pts</span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="ranking-empty">
+            <p>Aún no hay usuarios con SIGIPUNTOS acumulados.</p>
+        </div>
+        {% endif %}
+    </section>
+
+
+    <!-- ============================== -->
+    <!-- ACTIVIDAD RECIENTE             -->
+    <!-- ============================== -->
+
+    <section class="audit-activity-section">
+
+        <span class="card-label">ACTIVIDAD RECIENTE</span>
+        <h3>Últimas acciones del sistema</h3>
+
+        <div class="activity-tabs">
+            <button class="activity-tab active" data-tab="usuarios-nuevos">
+                Usuarios nuevos
+            </button>
+            <button class="activity-tab" data-tab="canjes-recientes">
+                Canjes realizados
+            </button>
+            <button class="activity-tab" data-tab="analisis-ia">
+                Análisis IA
+            </button>
+            <button class="activity-tab" data-tab="movimientos-puntos">
+                Movimientos de puntos
+            </button>
+        </div>
+
+        <!-- USUARIOS NUEVOS -->
+        <div class="activity-panel active" id="panel-usuarios-nuevos">
+            {% if usuarios_nuevos %}
+            <div class="activity-table-wrap">
+                <table class="activity-table">
+                    <thead>
+                        <tr>
+                            <th>USUARIO</th>
+                            <th>FICHA</th>
+                            <th>IDENTIFICACIÓN</th>
+                            <th>ROL</th>
+                            <th>CORREO</th>
+                            <th>PUNTOS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for u in usuarios_nuevos %}
+                        <tr>
+                            <td class="act-user">
+                                <div class="act-avatar">{{ u.nombre_completo[0] }}</div>
+                                <strong>{{ u.nombre_completo }}</strong>
+                            </td>
+                            <td class="act-id">{{ u.numero_ficha or '—' }}</td>
+                            <td class="act-id">{{ u.numero_identificacion }}</td>
+                            <td>
+                                <span class="act-tipo act-tipo-registro">{{ u.rol or 'USUARIO' }}</span>
+                            </td>
+                            <td class="act-email">{{ u.correo }}</td>
+                            <td class="act-points">
+                                <span class="act-points-val">{{ u.puntos_totales }}</span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="activity-empty">
+                <p>No hay usuarios registrados aún.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- CANJES RECIENTES -->
+        <div class="activity-panel" id="panel-canjes-recientes">
+            {% if canjes_recientes %}
+            <div class="activity-table-wrap">
+                <table class="activity-table">
+                    <thead>
+                        <tr>
+                            <th>FECHA</th>
+                            <th>USUARIO</th>
+                            <th>DESCRIPCIÓN</th>
+                            <th>PUNTOS GASTADOS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for c in canjes_recientes %}
+                        <tr>
+                            <td class="act-date">{{ c.fecha_canje }}</td>
+                            <td class="act-user">
+                                <div class="act-avatar">{{ c.nombre_completo[0] }}</div>
+                                <strong>{{ c.nombre_completo }}</strong>
+                            </td>
+                            <td class="act-desc">{{ c.descripcion_canje or 'Canje de producto' }}</td>
+                            <td class="act-points act-points-neg">
+                                <span class="act-points-val">-{{ c.total_puntos }}</span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="activity-empty">
+                <p>No hay canjes registrados aún.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- ANÁLISIS IA -->
+        <div class="activity-panel" id="panel-analisis-ia">
+            {% if analisis_recientes %}
+            <div class="activity-table-wrap">
+                <table class="activity-table">
+                    <thead>
+                        <tr>
+                            <th>FECHA</th>
+                            <th>USUARIO</th>
+                            <th>BOTELLA</th>
+                            <th>TAPA</th>
+                            <th>ETIQUETA</th>
+                            <th>PUNTOS</th>
+                            <th>CONFIANZA</th>
+                            <th>ESTADO</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for a in analisis_recientes %}
+                        <tr>
+                            <td class="act-date">{{ a.fecha_analisis }}</td>
+                            <td class="act-user">
+                                <div class="act-avatar">{{ a.nombre_completo[0] }}</div>
+                                <strong>{{ a.nombre_completo }}</strong>
+                            </td>
+                            <td class="act-center">
+                                {% if a.botella_detectada %}
+                                <span class="act-detected">✓</span>
+                                {% else %}
+                                <span class="act-not-detected">✗</span>
+                                {% endif %}
+                            </td>
+                            <td class="act-center">
+                                {% if a.tapa_detectada %}
+                                <span class="act-detected">✓</span>
+                                {% else %}
+                                <span class="act-not-detected">✗</span>
+                                {% endif %}
+                            </td>
+                            <td class="act-center">
+                                {% if a.etiqueta_detectada %}
+                                <span class="act-detected">✓</span>
+                                {% else %}
+                                <span class="act-not-detected">✗</span>
+                                {% endif %}
+                            </td>
+                            <td class="act-points">
+                                <span class="act-points-val">+{{ a.puntos_totales or 0 }}</span>
+                            </td>
+                            <td class="act-center">
+                                {% if a.confianza %}
+                                <span class="act-confidence">{{ a.confianza }}%</span>
+                                {% else %}
+                                —
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="act-tipo act-tipo-{{ a.estado_analisis|lower }}">
+                                    {{ a.estado_analisis }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="activity-empty">
+                <p>No hay análisis IA registrados aún.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- MOVIMIENTOS DE PUNTOS -->
+        <div class="activity-panel" id="panel-movimientos-puntos">
+            {% if movimientos_recientes %}
+            <div class="activity-table-wrap">
+                <table class="activity-table">
+                    <thead>
+                        <tr>
+                            <th>FECHA</th>
+                            <th>USUARIO</th>
+                            <th>TIPO</th>
+                            <th>MOTIVO</th>
+                            <th>PUNTOS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for m in movimientos_recientes %}
+                        <tr>
+                            <td class="act-date">{{ m.fecha_movimiento }}</td>
+                            <td class="act-user">
+                                <div class="act-avatar">{{ m.nombre_completo[0] }}</div>
+                                <strong>{{ m.nombre_completo }}</strong>
+                            </td>
+                            <td>
+                                <span class="act-tipo act-tipo-{{ m.tipo_movimiento|lower }}">
+                                    {{ m.tipo_movimiento }}
+                                </span>
+                            </td>
+                            <td class="act-desc">{{ m.motivo or '—' }}</td>
+                            <td class="act-points {% if m.puntos < 0 %}act-points-neg{% else %}act-points-pos{% endif %}">
+                                <span class="act-points-val">
+                                    {% if m.puntos > 0 %}+{% endif %}{{ m.puntos }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="activity-empty">
+                <p>No hay movimientos de puntos registrados aún.</p>
+            </div>
+            {% endif %}
         </div>
 
     </section>
 
 
-    <!-- TABLA DE AUDITORÍAS -->
+    <!-- ============================== -->
+    <!-- REGISTRO DEL SISTEMA           -->
+    <!-- ============================== -->
 
     <section class="audit-container">
-
         <div class="audit-header">
-
-            <div>
-
-                <span class="card-label">
-                    REGISTRO DEL SISTEMA
-                </span>
-
-                <h3>
-                    Historial de actividad
-                </h3>
-
-                <p>
-                    Aquí se muestran las acciones registradas
-                    por el sistema de auditoría.
-                </p>
-
-            </div>
-
+            <span class="card-label">REGISTRO DEL SISTEMA</span>
+            <h3>Historial de actividad</h3>
+            <p>Acciones registradas por el sistema de auditoría.</p>
         </div>
-
 
         <div class="audit-table-container">
-
             {% if auditorias %}
-
-                <table class="audit-table">
-
-                    <thead>
-
-                        <tr>
-
-                            <th>FECHA</th>
-                            <th>USUARIO</th>
-                            <th>ACCIÓN</th>
-                            <th>TABLA</th>
-                            <th>REGISTRO</th>
-                            <th>DESCRIPCIÓN</th>
-                            <th>IP</th>
-
-                        </tr>
-
-                    </thead>
-
-
-                    <tbody>
-
-                        {% for auditoria in auditorias %}
-
-                            <tr>
-
-                                <!-- FECHA -->
-
-                                <td>
-
-                                    <span class="audit-date">
-                                        {{ auditoria.fecha }}
-                                    </span>
-
-                                </td>
-
-
-                                <!-- USUARIO -->
-
-                                <td>
-
-                                    {% if auditoria.nombre_completo %}
-
-                                        <div class="audit-user">
-
-                                            <div class="audit-avatar">
-                                                {{ auditoria.nombre_completo[0] }}
-                                            </div>
-
-                                            <div>
-
-                                                <strong>
-                                                    {{ auditoria.nombre_completo }}
-                                                </strong>
-
-                                                <span>
-                                                    {{ auditoria.numero_identificacion }}
-                                                </span>
-
-                                            </div>
-
-                                        </div>
-
-                                    {% else %}
-
-                                        <span class="system-user">
-                                            Sistema
-                                        </span>
-
-                                    {% endif %}
-
-                                </td>
-
-
-                                <!-- ACCIÓN -->
-
-                                <td>
-
-                                    {% if auditoria.accion %}
-
-                                        <span class="audit-action">
-                                            {{ auditoria.accion }}
-                                        </span>
-
-                                    {% else %}
-
-                                        <span class="audit-record empty">
-                                            —
-                                        </span>
-
-                                    {% endif %}
-
-                                </td>
-
-
-                                <!-- TABLA AFECTADA -->
-
-                                <td>
-
-                                    {% if auditoria.tabla_afectada %}
-
-                                        <span class="audit-table-badge">
-                                            {{ auditoria.tabla_afectada }}
-                                        </span>
-
-                                    {% else %}
-
-                                        <span class="audit-record empty">
-                                            —
-                                        </span>
-
-                                    {% endif %}
-
-                                </td>
-
-
-                                <!-- ID REGISTRO -->
-
-                                <td>
-
-                                    {% if auditoria.id_registro %}
-
-                                        <span class="audit-record">
-                                            #{{ auditoria.id_registro }}
-                                        </span>
-
-                                    {% else %}
-
-                                        <span class="audit-record empty">
-                                            —
-                                        </span>
-
-                                    {% endif %}
-
-                                </td>
-
-
-                                <!-- DESCRIPCIÓN -->
-
-                                <td>
-
-                                    <div class="audit-description">
-
-                                        {% if auditoria.descripcion %}
-                                            {{ auditoria.descripcion }}
-                                        {% else %}
-                                            Sin descripción
-                                        {% endif %}
-
-                                    </div>
-
-                                </td>
-
-
-                                <!-- IP -->
-
-                                <td>
-
-                                    {% if auditoria.ip %}
-
-                                        <span class="audit-ip">
-                                            {{ auditoria.ip }}
-                                        </span>
-
-                                    {% else %}
-
-                                        <span class="audit-record empty">
-                                            —
-                                        </span>
-
-                                    {% endif %}
-
-                                </td>
-
-                            </tr>
-
-                        {% endfor %}
-
-                    </tbody>
-
-                </table>
-
-
+            <table class="audit-table">
+                <thead>
+                    <tr>
+                        <th>FECHA</th>
+                        <th>USUARIO</th>
+                        <th>ACCIÓN</th>
+                        <th>TABLA</th>
+                        <th>REGISTRO</th>
+                        <th>DESCRIPCIÓN</th>
+                        <th>IP</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for a in auditorias %}
+                    <tr>
+                        <td><span class="audit-date">{{ a.fecha }}</span></td>
+                        <td>
+                            {% if a.nombre_completo %}
+                            <div class="audit-user">
+                                <div class="audit-avatar">{{ a.nombre_completo[0] }}</div>
+                                <div>
+                                    <strong>{{ a.nombre_completo }}</strong>
+                                    <span>{{ a.numero_identificacion }}</span>
+                                </div>
+                            </div>
+                            {% else %}
+                            <span class="system-user">Sistema</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if a.accion %}
+                            <span class="audit-action">{{ a.accion }}</span>
+                            {% else %}
+                            <span class="audit-record empty">—</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if a.tabla_afectada %}
+                            <span class="audit-table-badge">{{ a.tabla_afectada }}</span>
+                            {% else %}
+                            <span class="audit-record empty">—</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if a.id_registro %}
+                            <span class="audit-record">#{{ a.id_registro }}</span>
+                            {% else %}
+                            <span class="audit-record empty">—</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="audit-description">
+                                {{ a.descripcion or 'Sin descripción' }}
+                            </div>
+                        </td>
+                        <td>
+                            {% if a.ip %}
+                            <span class="audit-ip">{{ a.ip }}</span>
+                            {% else %}
+                            <span class="audit-record empty">—</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
             {% else %}
-
-                <!-- SIN REGISTROS -->
-
-                <div class="audit-empty">
-
-                    <div class="audit-empty-icon">
-                        ◷
-                    </div>
-
-                    <h3>
-                        No hay auditorías registradas
-                    </h3>
-
-                    <p>
-                        Todavía no existen acciones registradas
-                        en la tabla de auditoría.
-                    </p>
-
-                </div>
-
+            <div class="audit-empty">
+                <div class="audit-empty-icon">◷</div>
+                <h3>No hay auditorías registradas</h3>
+                <p>Todavía no existen acciones registradas en la tabla de auditoría.</p>
+            </div>
             {% endif %}
-
         </div>
-
     </section>
 
 
     <!-- INFORMACIÓN -->
-
     <section class="audit-info">
-
-        <div class="audit-info-icon">
-            ✓
-        </div>
-
+        <div class="audit-info-icon">✓</div>
         <div>
-
-            <span>
-                CONTROL Y SEGURIDAD
-            </span>
-
-            <h3>
-                Registro de actividad del sistema
-            </h3>
-
+            <span>CONTROL Y SEGURIDAD</span>
+            <h3>Registro de actividad del sistema</h3>
             <p>
-                SIGIREC registra las acciones importantes
-                realizadas sobre usuarios, reciclajes y
-                catálogo. Cada registro permite identificar
-                quién realizó la acción, qué elemento fue
-                afectado, cuándo ocurrió y desde qué dirección
-                IP se realizó.
+                SIGIREC registra las acciones importantes realizadas sobre usuarios,
+                reciclajes, canjes y catálogo. Cada registro permite identificar quién
+                realizó la acción, qué elemento fue afectado, cuándo ocurrió y desde qué
+                dirección IP se realizó.
             </p>
-
         </div>
-
     </section>
 
-
 </main>
-
 </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    var tabs = document.querySelectorAll(".activity-tab");
+    var panels = document.querySelectorAll(".activity-panel");
+
+    tabs.forEach(function (tab) {
+        tab.addEventListener("click", function () {
+
+            tabs.forEach(function (t) { t.classList.remove("active"); });
+            panels.forEach(function (p) { p.classList.remove("active"); });
+
+            tab.classList.add("active");
+
+            var targetId = "panel-" + tab.getAttribute("data-tab");
+            var target = document.getElementById(targetId);
+
+            if (target) {
+                target.classList.add("active");
+            }
+
+        });
+    });
+
+});
+</script>
 
 {% endblock %}

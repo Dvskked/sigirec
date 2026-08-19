@@ -1,0 +1,496 @@
+{% extends "base.html" %}
+
+{% block title %}Movimientos | SIGIREC Admin{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin_usuarios.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin-dashboard.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/movimientos.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="admin-dashboard">
+
+    <aside class="admin-sidebar">
+        <div class="admin-brand">
+            <div class="admin-logo">
+                <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo SIGIREC">
+            </div>
+            <h1>SIGIREC</h1>
+            <p>Panel administrativo</p>
+        </div>
+
+        <nav class="admin-menu">
+            <span class="admin-menu-title">MENÚ ADMINISTRATIVO</span>
+
+            <a href="{{ url_for('admin_dashboard') }}" class="admin-menu-item">
+                <span class="admin-menu-icon">⌂</span>
+                <span>Dashboard</span>
+            </a>
+            <a href="{{ url_for('admin_usuarios') }}" class="admin-menu-item">
+                <span class="admin-menu-icon">♙</span>
+                <span>Gestión de usuarios</span>
+            </a>
+            <a href="{{ url_for('admin_reciclajes') }}" class="admin-menu-item">
+                <span class="admin-menu-icon">♻</span>
+                <span>Reciclajes</span>
+            </a>
+            <a href="{{ url_for('admin_movimientos') }}" class="admin-menu-item active">
+                <span class="admin-menu-icon">⇄</span>
+                <span>Movimientos</span>
+            </a>
+            <a href="{{ url_for('admin_catalogo') }}" class="admin-menu-item">
+                <span class="admin-menu-icon">▣</span>
+                <span>Catálogo</span>
+            </a>
+            <a href="{{ url_for('admin_auditorias') }}" class="admin-menu-item">
+                <span class="admin-menu-icon">◷</span>
+                <span>Auditorías</span>
+            </a>
+        </nav>
+
+        <div class="admin-sidebar-bottom">
+            <div class="admin-user">
+                <div class="admin-avatar">
+                    {{ session["nombre_completo"][0] }}
+                </div>
+                <div class="admin-user-info">
+                    <strong>{{ session["nombre_completo"] }}</strong>
+                    <span>Administrador</span>
+                </div>
+            </div>
+            <a href="{{ url_for('logout') }}" class="admin-logout">
+                <span>↪</span> Cerrar sesión
+            </a>
+        </div>
+    </aside>
+
+    <main class="admin-main">
+
+        <div class="admin-header">
+            <h2>Movimientos - Intercambio de SIGIPUNTOS</h2>
+            <p>Gestiona los canjes de puntos por productos del catálogo</p>
+        </div>
+
+        <div class="movimientos-grid">
+
+            <!-- Panel de búsqueda de usuario -->
+            <div class="mov-card mov-search-panel">
+                <div class="mov-card-header">
+                    <span class="mov-card-icon">👤</span>
+                    <h3>Buscar Usuario</h3>
+                </div>
+
+                <div class="mov-form-group">
+                    <label for="identificacion">Identificación del usuario</label>
+                    <div class="mov-input-group">
+                        <select id="identificacion" class="mov-select">
+                            <option value="">-- Seleccionar usuario --</option>
+                            {% for u in usuarios %}
+                            <option value="{{ u.numero_identificacion }}"
+                                    data-id="{{ u.id_usuario }}">
+                                {{ u.numero_identificacion }} - {{ u.nombre_completo }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <button type="button" id="btn-buscar" class="mov-btn mov-btn-primary">
+                            Buscar
+                        </button>
+                    </div>
+                </div>
+
+                <div id="usuario-info" class="mov-usuario-info" style="display:none;">
+                    <div class="mov-info-grid">
+                        <div class="mov-info-item">
+                            <span class="mov-info-label">Nombre</span>
+                            <span id="info-nombre" class="mov-info-value">—</span>
+                        </div>
+                        <div class="mov-info-item">
+                            <span class="mov-info-label">Identificación</span>
+                            <span id="info-id" class="mov-info-value">—</span>
+                        </div>
+                        <div class="mov-info-item">
+                            <span class="mov-info-label">Correo</span>
+                            <span id="info-correo" class="mov-info-value">—</span>
+                        </div>
+                        <div class="mov-info-item mov-info-saldo">
+                            <span class="mov-info-label">SIGIPUNTOS</span>
+                            <span id="info-puntos" class="mov-info-value mov-puntos-badge">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel de selección de producto -->
+            <div class="mov-card mov-product-panel">
+                <div class="mov-card-header">
+                    <span class="mov-card-icon">📦</span>
+                    <h3>Seleccionar Producto</h3>
+                </div>
+
+                <div class="mov-form-group">
+                    <label for="producto">Producto a reclamar</label>
+                    <select id="producto" class="mov-select" disabled>
+                        <option value="">-- Primero busca un usuario --</option>
+                        {% for p in productos %}
+                        <option value="{{ p.id_producto }}"
+                                data-costo="{{ p.costo_puntos }}"
+                                data-stock="{{ p.stock }}"
+                                data-nombre="{{ p.nombre }}">
+                            {{ p.nombre }} — {{ p.costo_puntos }} pts (Stock: {{ p.stock }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div id="producto-info" class="mov-producto-info" style="display:none;">
+                    <div class="mov-info-grid">
+                        <div class="mov-info-item">
+                            <span class="mov-info-label">Producto</span>
+                            <span id="prod-nombre" class="mov-info-value">—</span>
+                        </div>
+                        <div class="mov-info-item">
+                            <span class="mov-info-label">Costo</span>
+                            <span id="prod-costo" class="mov-info-value mov-costo">0</span>
+                        </div>
+                        <div class="mov-info-item">
+                            <span class="mov-info-label">Stock</span>
+                            <span id="prod-stock" class="mov-info-value">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel de confirmación -->
+            <div class="mov-card mov-confirm-panel">
+                <div class="mov-card-header">
+                    <span class="mov-card-icon">⇄</span>
+                    <h3>Confirmar Canje</h3>
+                </div>
+
+                <div id="resumen-canje" class="mov-resumen" style="display:none;">
+                    <div class="mov-resumen-row">
+                        <span>Saldo actual:</span>
+                        <span id="res-saldo-actual">0 pts</span>
+                    </div>
+                    <div class="mov-resumen-row mov-resumen-resta">
+                        <span>Costo del producto:</span>
+                        <span id="res-costo">- 0 pts</span>
+                    </div>
+                    <hr class="mov-divider">
+                    <div class="mov-resumen-row mov-resumen-total">
+                        <span>Saldo después del canje:</span>
+                        <span id="res-saldo-nuevo">0 pts</span>
+                    </div>
+                </div>
+
+                <div id="sin-seleccion" class="mov-placeholder">
+                    <p>Selecciona un usuario y un producto para ver el resumen del canje.</p>
+                </div>
+
+                <button type="button" id="btn-canjar" class="mov-btn mov-btn-success mov-btn-block" disabled>
+                    Confirmar Canje
+                </button>
+            </div>
+
+        </div>
+
+        <!-- Mensajes -->
+        <div id="mov-exito" class="mov-alert mov-alert-success" style="display:none;">
+            <strong>¡Canje exitoso!</strong>
+            <span id="msg-exito"></span>
+        </div>
+
+        <div id="mov-error" class="mov-alert mov-alert-danger" style="display:none;">
+            <strong>Error:</strong>
+            <span id="msg-error"></span>
+        </div>
+
+        <!-- Tabla de canjes recientes -->
+        <div class="mov-card mov-table-panel">
+            <div class="mov-card-header">
+                <span class="mov-card-icon">📋</span>
+                <h3>Productos Disponibles</h3>
+            </div>
+
+            <div class="mov-table-responsive">
+                <table class="mov-table">
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Descripción</th>
+                            <th>Costo (SIGIPUNTOS)</th>
+                            <th>Stock</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in productos %}
+                        <tr>
+                            <td><strong>{{ p.nombre }}</strong></td>
+                            <td>{{ p.descripcion or 'Sin descripción' }}</td>
+                            <td><span class="mov-costo">{{ p.costo_puntos }}</span></td>
+                            <td>
+                                {% if p.stock > 5 %}
+                                <span class="mov-stock-ok">{{ p.stock }}</span>
+                                {% elif p.stock > 0 %}
+                                <span class="mov-stock-low">{{ p.stock }}</span>
+                                {% else %}
+                                <span class="mov-stock-out">Agotado</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        {% if not productos %}
+                        <tr>
+                            <td colspan="4" class="mov-empty">No hay productos disponibles en el catálogo.</td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const selectUsuario = document.getElementById("identificacion");
+    const selectProducto = document.getElementById("producto");
+    const btnBuscar = document.getElementById("btn-buscar");
+    const btnCanjar = document.getElementById("btn-canjar");
+
+    const panelInfo = document.getElementById("usuario-info");
+    const panelProdInfo = document.getElementById("producto-info");
+    const panelResumen = document.getElementById("resumen-canje");
+    const sinSeleccion = document.getElementById("sin-seleccion");
+
+    const msgExito = document.getElementById("mov-exito");
+    const msgError = document.getElementById("mov-error");
+
+    let usuarioActual = null;
+    let productoActual = null;
+
+    // ========================================
+    // BUSCAR USUARIO
+    // ========================================
+    btnBuscar.addEventListener("click", function () {
+
+        const identificacion = selectUsuario.value.trim();
+
+        if (!identificacion) {
+            mostrarError("Selecciona o digita una identificación de usuario.");
+            return;
+        }
+
+        btnBuscar.disabled = true;
+        btnBuscar.textContent = "Buscando...";
+
+        fetch("/admin/api/usuario/" + encodeURIComponent(identificacion))
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+
+                if (data.error) {
+                    mostrarError(data.error);
+                    usuarioActual = null;
+                    panelInfo.style.display = "none";
+                    selectProducto.disabled = true;
+                    selectProducto.value = "";
+                    actualizarResumen();
+                    return;
+                }
+
+                usuarioActual = data;
+
+                document.getElementById("info-nombre").textContent = data.nombre_completo;
+                document.getElementById("info-id").textContent = data.numero_identificacion;
+                document.getElementById("info-correo").textContent = data.correo || "—";
+                document.getElementById("info-puntos").textContent = data.puntos_totales;
+
+                panelInfo.style.display = "block";
+                selectProducto.disabled = false;
+
+                ocultarMensajes();
+                actualizarResumen();
+
+            })
+            .catch(function (err) {
+                mostrarError("Error de conexión: " + err.message);
+            })
+            .finally(function () {
+                btnBuscar.disabled = false;
+                btnBuscar.textContent = "Buscar";
+            });
+
+    });
+
+    // ========================================
+    // SELECCIONAR PRODUCTO
+    // ========================================
+    selectProducto.addEventListener("change", function () {
+
+        const option = selectProducto.options[selectProducto.selectedIndex];
+
+        if (!selectProducto.value) {
+            productoActual = null;
+            panelProdInfo.style.display = "none";
+            actualizarResumen();
+            return;
+        }
+
+        productoActual = {
+            id: parseInt(selectProducto.value),
+            nombre: option.getAttribute("data-nombre"),
+            costo: parseInt(option.getAttribute("data-costo")),
+            stock: parseInt(option.getAttribute("data-stock"))
+        };
+
+        document.getElementById("prod-nombre").textContent = productoActual.nombre;
+        document.getElementById("prod-costo").textContent = productoActual.costo + " SIGIPUNTOS";
+        document.getElementById("prod-stock").textContent = productoActual.stock;
+
+        panelProdInfo.style.display = "block";
+        actualizarResumen();
+
+    });
+
+    // ========================================
+    // ACTUALIZAR RESUMEN
+    // ========================================
+    function actualizarResumen() {
+
+        if (!usuarioActual || !productoActual) {
+            panelResumen.style.display = "none";
+            sinSeleccion.style.display = "block";
+            btnCanjar.disabled = true;
+            return;
+        }
+
+        panelResumen.style.display = "block";
+        sinSeleccion.style.display = "none";
+
+        const saldo = usuarioActual.puntos_totales;
+        const costo = productoActual.costo;
+        const nuevoSaldo = saldo - costo;
+
+        document.getElementById("res-saldo-actual").textContent = saldo + " pts";
+        document.getElementById("res-costo").textContent = "- " + costo + " pts";
+
+        const elSaldoNuevo = document.getElementById("res-saldo-nuevo");
+        elSaldoNuevo.textContent = nuevoSaldo + " pts";
+
+        if (nuevoSaldo < 0) {
+            elSaldoNuevo.classList.add("mov-saldo-negativo");
+            elSaldoNuevo.classList.remove("mov-saldo-positivo");
+            btnCanjar.disabled = true;
+        } else {
+            elSaldoNuevo.classList.remove("mov-saldo-negativo");
+            elSaldoNuevo.classList.add("mov-saldo-positivo");
+            btnCanjar.disabled = false;
+        }
+
+    }
+
+    // ========================================
+    // CANJEAR
+    // ========================================
+    btnCanjar.addEventListener("click", function () {
+
+        if (!usuarioActual || !productoActual) return;
+
+        const saldo = usuarioActual.puntos_totales;
+        const costo = productoActual.costo;
+
+        if (saldo < costo) {
+            mostrarError(
+                "El usuario no tiene suficientes SIGIPUNTOS. " +
+                "Tiene " + saldo + " y necesita " + costo + "."
+            );
+            return;
+        }
+
+        if (!confirm(
+            "¿Confirmar canje?\n\n" +
+            "Usuario: " + usuarioActual.nombre_completo + "\n" +
+            "Producto: " + productoActual.nombre + "\n" +
+            "Costo: " + costo + " SIGIPUNTOS\n" +
+            "Saldo restante: " + (saldo - costo) + " SIGIPUNTOS"
+        )) {
+            return;
+        }
+
+        btnCanjar.disabled = true;
+        btnCanjar.textContent = "Procesando...";
+
+        fetch("/admin/movimientos/canjar", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                id_usuario: usuarioActual.id_usuario,
+                id_producto: productoActual.id
+            })
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+
+            if (data.error) {
+                mostrarError(data.error);
+                return;
+            }
+
+            mostrarExito(
+                data.mensaje +
+                " | Nuevo saldo: " + data.saldo_nuevo +
+                " SIGIPUNTOS | Comprobante: " + data.numero_canje
+            );
+
+            // Actualizar saldo en pantalla
+            usuarioActual.puntos_totales = data.saldo_nuevo;
+            document.getElementById("info-puntos").textContent = data.saldo_nuevo;
+
+            // Actualizar stock del producto
+            productoActual.stock--;
+            document.getElementById("prod-stock").textContent = productoActual.stock;
+
+            const opt = selectProducto.options[selectProducto.selectedIndex];
+            opt.setAttribute("data-stock", productoActual.stock);
+            opt.textContent = productoActual.nombre + " — " + productoActual.costo + " pts (Stock: " + productoActual.stock + ")";
+
+            actualizarResumen();
+
+        })
+        .catch(function (err) {
+            mostrarError("Error de conexión: " + err.message);
+        })
+        .finally(function () {
+            btnCanjar.disabled = false;
+            btnCanjar.textContent = "Confirmar Canje";
+        });
+
+    });
+
+    // ========================================
+    // UTILIDADES
+    // ========================================
+    function mostrarError(msg) {
+        document.getElementById("msg-error").textContent = msg;
+        msgError.style.display = "block";
+        msgExito.style.display = "none";
+    }
+
+    function mostrarExito(msg) {
+        document.getElementById("msg-exito").textContent = msg;
+        msgExito.style.display = "block";
+        msgError.style.display = "none";
+    }
+
+    function ocultarMensajes() {
+        msgExito.style.display = "none";
+        msgError.style.display = "none";
+    }
+
+});
+</script>
+
+{% endblock %}

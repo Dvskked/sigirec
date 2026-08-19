@@ -440,7 +440,7 @@ def api_escanear():
 
         resultados = model(
             frame,
-            conf=0.10
+            conf=0.15
         )
 
         resultado = resultados[0]
@@ -1991,7 +1991,7 @@ def admin_auditorias():
         cursor = conexion.cursor(dictionary=True)
 
         # ==========================================
-        # AUDITORÍAS
+        # AUDITORÍAS (REGISTRO DEL SISTEMA)
         # ==========================================
 
         cursor.execute("""
@@ -2014,9 +2014,178 @@ def admin_auditorias():
                 ON a.id_usuario = u.id_usuario
 
             ORDER BY a.fecha DESC
+
+            LIMIT 100
         """)
 
         auditorias = cursor.fetchall()
+
+        # ==========================================
+        # USUARIOS RECIENTES
+        # ==========================================
+
+        cursor.execute("""
+            SELECT
+                u.id_usuario,
+                u.numero_identificacion,
+                u.nombre_completo,
+                u.correo,
+                u.numero_ficha,
+                u.rol,
+
+                COALESCE(
+                    (
+                        SELECT SUM(mp.puntos)
+                        FROM movimientos_puntos mp
+                        WHERE mp.id_usuario = u.id_usuario
+                    ),
+                    0
+                ) AS puntos_totales
+
+            FROM usuarios u
+
+            WHERE u.tipo_usuario = 'USUARIO'
+
+            ORDER BY u.id_usuario DESC
+
+            LIMIT 10
+        """)
+
+        usuarios_nuevos = cursor.fetchall()
+
+        # ==========================================
+        # CANJES RECIENTES
+        # ==========================================
+
+        cursor.execute("""
+            SELECT
+                c.id_canje,
+                c.total_puntos,
+                c.fecha_canje,
+
+                u.nombre_completo,
+                u.numero_identificacion,
+
+                (
+                    SELECT mp.motivo
+                    FROM movimientos_puntos mp
+                    WHERE mp.id_canje = c.id_canje
+                    LIMIT 1
+                ) AS descripcion_canje
+
+            FROM canjes c
+
+            LEFT JOIN usuarios u
+                ON c.id_usuario = u.id_usuario
+
+            ORDER BY c.fecha_canje DESC
+
+            LIMIT 15
+        """)
+
+        canjes_recientes = cursor.fetchall()
+
+        # ==========================================
+        # ANÁLISIS IA RECIENTES
+        # ==========================================
+
+        cursor.execute("""
+            SELECT
+                ai.id_analisis,
+                ai.fecha_analisis,
+                ai.botella_detectada,
+                ai.tapa_detectada,
+                ai.etiqueta_detectada,
+                ai.puntos_totales,
+                ai.confianza,
+                ai.estado_analisis,
+
+                u.nombre_completo,
+                u.numero_identificacion
+
+            FROM analisis_ia ai
+
+            LEFT JOIN usuarios u
+                ON ai.id_usuario = u.id_usuario
+
+            ORDER BY ai.fecha_analisis DESC
+
+            LIMIT 15
+        """)
+
+        analisis_recientes = cursor.fetchall()
+
+        # ==========================================
+        # MOVIMIENTOS DE PUNTOS RECIENTES
+        # ==========================================
+
+        cursor.execute("""
+            SELECT
+                mp.id_movimiento,
+                mp.tipo_movimiento,
+                mp.puntos,
+                mp.motivo,
+                mp.fecha_movimiento,
+
+                u.nombre_completo,
+                u.numero_identificacion
+
+            FROM movimientos_puntos mp
+
+            LEFT JOIN usuarios u
+                ON mp.id_usuario = u.id_usuario
+
+            ORDER BY mp.fecha_movimiento DESC
+
+            LIMIT 20
+        """)
+
+        movimientos_recientes = cursor.fetchall()
+
+        # ==========================================
+        # RANKING - TOP USUARIOS CON MÁS PUNTOS
+        # ==========================================
+
+        cursor.execute("""
+            SELECT
+                u.id_usuario,
+                u.numero_identificacion,
+                u.nombre_completo,
+
+                COALESCE(SUM(mp.puntos), 0) AS puntos_totales,
+
+                (
+                    SELECT COUNT(*)
+                    FROM analisis_ia ai
+                    WHERE ai.id_usuario = u.id_usuario
+                ) AS total_analisis,
+
+                (
+                    SELECT COUNT(*)
+                    FROM canjes c
+                    WHERE c.id_usuario = u.id_usuario
+                ) AS total_canjes
+
+            FROM usuarios u
+
+            LEFT JOIN movimientos_puntos mp
+                ON mp.id_usuario = u.id_usuario
+
+            WHERE u.tipo_usuario = 'USUARIO'
+
+            GROUP BY
+                u.id_usuario,
+                u.numero_identificacion,
+                u.nombre_completo
+
+            HAVING puntos_totales > 0
+
+            ORDER BY puntos_totales DESC
+
+            LIMIT 20
+        """)
+
+        ranking = cursor.fetchall()
 
         # ==========================================
         # ESTADÍSTICAS
@@ -2027,42 +2196,53 @@ def admin_auditorias():
             FROM auditoria
         """)
 
-        total = cursor.fetchone()["total"]
+        total_acciones = cursor.fetchone()["total"]
 
         cursor.execute("""
             SELECT COUNT(*) AS total
-            FROM auditoria
-            WHERE tabla_afectada = 'usuarios'
+            FROM usuarios
+            WHERE tipo_usuario = 'USUARIO'
         """)
 
-        usuarios = cursor.fetchone()["total"]
+        total_usuarios = cursor.fetchone()["total"]
 
         cursor.execute("""
             SELECT COUNT(*) AS total
-            FROM auditoria
-            WHERE tabla_afectada = 'analisis_ia'
+            FROM canjes
         """)
 
-        reciclajes = cursor.fetchone()["total"]
+        total_canjes = cursor.fetchone()["total"]
 
         cursor.execute("""
             SELECT COUNT(*) AS total
-            FROM auditoria
-            WHERE tabla_afectada = 'productos'
+            FROM analisis_ia
         """)
 
-        catalogo = cursor.fetchone()["total"]
+        total_analisis_ia = cursor.fetchone()["total"]
+
+        cursor.execute("""
+            SELECT COUNT(*) AS total
+            FROM movimientos_puntos
+        """)
+
+        total_movimientos = cursor.fetchone()["total"]
 
         estadisticas = {
-            "total": total,
-            "usuarios": usuarios,
-            "reciclajes": reciclajes,
-            "catalogo": catalogo
+            "total_acciones": total_acciones,
+            "total_usuarios": total_usuarios,
+            "total_canjes": total_canjes,
+            "total_analisis_ia": total_analisis_ia,
+            "total_movimientos": total_movimientos
         }
 
         return render_template(
             "admin/admin_auditoria.html",
             auditorias=auditorias,
+            usuarios_nuevos=usuarios_nuevos,
+            canjes_recientes=canjes_recientes,
+            analisis_recientes=analisis_recientes,
+            movimientos_recientes=movimientos_recientes,
+            ranking=ranking,
             estadisticas=estadisticas
         )
 
@@ -2073,11 +2253,17 @@ def admin_auditorias():
         return render_template(
             "admin/admin_auditoria.html",
             auditorias=[],
+            usuarios_nuevos=[],
+            canjes_recientes=[],
+            analisis_recientes=[],
+            movimientos_recientes=[],
+            ranking=[],
             estadisticas={
-                "total": 0,
-                "usuarios": 0,
-                "reciclajes": 0,
-                "catalogo": 0
+                "total_acciones": 0,
+                "total_usuarios": 0,
+                "total_canjes": 0,
+                "total_analisis_ia": 0,
+                "total_movimientos": 0
             }
         )
 
@@ -2088,6 +2274,327 @@ def admin_auditorias():
 
         if conexion:
             conexion.close()
+
+
+# ==========================================
+# MOVIMIENTOS (INTERCAMBIO DE PUNTOS)
+# ==========================================
+@app.route("/admin/movimientos")
+def admin_movimientos():
+
+    if "id_usuario" not in session:
+        return redirect(url_for("login"))
+
+    if session.get("tipo_usuario") != "ADMINISTRADOR":
+        return redirect(url_for("dashboard"))
+
+    conexion = obtener_conexion()
+
+    if conexion is None:
+        flash(
+            "No fue posible conectar con la base de datos.",
+            "danger"
+        )
+        return redirect(url_for("admin_dashboard"))
+
+    cursor = conexion.cursor(dictionary=True)
+
+    try:
+
+        cursor.execute("""
+            SELECT
+                id_producto,
+                nombre,
+                descripcion,
+                costo_puntos,
+                stock
+            FROM productos
+            WHERE stock > 0
+            ORDER BY costo_puntos ASC
+        """)
+
+        productos = cursor.fetchall()
+
+        cursor.execute("""
+            SELECT
+                u.id_usuario,
+                u.numero_identificacion,
+                u.nombre_completo,
+
+                COALESCE(
+                    (
+                        SELECT SUM(mp.puntos)
+                        FROM movimientos_puntos mp
+                        WHERE mp.id_usuario = u.id_usuario
+                    ),
+                    0
+                ) AS puntos_totales
+
+            FROM usuarios u
+            WHERE u.tipo_usuario = 'USUARIO'
+            ORDER BY u.nombre_completo ASC
+        """)
+
+        usuarios = cursor.fetchall()
+
+        return render_template(
+            "admin/movimientos.html",
+            productos=productos,
+            usuarios=usuarios
+        )
+
+    except Exception as e:
+
+        print("ERROR MOVIMIENTOS:", e)
+        flash(
+            f"Error al cargar movimientos: {e}",
+            "danger"
+        )
+        return redirect(url_for("admin_dashboard"))
+
+    finally:
+        cursor.close()
+        conexion.close()
+
+
+@app.route("/admin/api/usuario/<identificacion>")
+def api_buscar_usuario(identificacion):
+
+    if "id_usuario" not in session:
+        return jsonify({"error": "Sesión no válida."}), 401
+
+    if session.get("tipo_usuario") != "ADMINISTRADOR":
+        return jsonify({"error": "No autorizado."}), 403
+
+    conexion = obtener_conexion()
+
+    if conexion is None:
+        return jsonify({"error": "Error de conexión."}), 500
+
+    cursor = conexion.cursor(dictionary=True)
+
+    try:
+
+        cursor.execute("""
+            SELECT
+                u.id_usuario,
+                u.numero_identificacion,
+                u.nombre_completo,
+                u.correo,
+                u.rol,
+
+                COALESCE(
+                    (
+                        SELECT SUM(mp.puntos)
+                        FROM movimientos_puntos mp
+                        WHERE mp.id_usuario = u.id_usuario
+                    ),
+                    0
+                ) AS puntos_totales
+
+            FROM usuarios u
+            WHERE u.numero_identificacion = %s
+        """, (identificacion,))
+
+        usuario = cursor.fetchone()
+
+        if usuario is None:
+            return jsonify({
+                "error": "No se encontró un usuario con esa identificación."
+            }), 404
+
+        return jsonify(usuario)
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+    finally:
+        cursor.close()
+        conexion.close()
+
+
+@app.route("/admin/movimientos/canjar", methods=["POST"])
+def admin_canjar_puntos():
+
+    if "id_usuario" not in session:
+        return redirect(url_for("login"))
+
+    if session.get("tipo_usuario") != "ADMINISTRADOR":
+        return redirect(url_for("dashboard"))
+
+    datos = request.get_json()
+
+    if not datos:
+        return jsonify({"error": "No se recibieron datos."}), 400
+
+    id_usuario = datos.get("id_usuario")
+    id_producto = datos.get("id_producto")
+
+    if not id_usuario or not id_producto:
+        return jsonify({
+            "error": "Faltan datos: id_usuario e id_producto son obligatorios."
+        }), 400
+
+    conexion = obtener_conexion()
+
+    if conexion is None:
+        return jsonify({"error": "Error de conexión."}), 500
+
+    cursor = conexion.cursor(dictionary=True)
+
+    try:
+
+        # ==========================================
+        # 1. OBTENER PRODUCTO
+        # ==========================================
+
+        cursor.execute("""
+            SELECT id_producto, nombre, costo_puntos, stock
+            FROM productos
+            WHERE id_producto = %s
+        """, (id_producto,))
+
+        producto = cursor.fetchone()
+
+        if producto is None:
+            return jsonify({
+                "error": "El producto no existe."
+            }), 404
+
+        if producto["stock"] <= 0:
+            return jsonify({
+                "error": "El producto no tiene stock disponible."
+            }), 400
+
+        # ==========================================
+        # 2. OBTENER SALDO DEL USUARIO
+        # ==========================================
+
+        cursor.execute("""
+            SELECT COALESCE(SUM(puntos), 0) AS saldo
+            FROM movimientos_puntos
+            WHERE id_usuario = %s
+        """, (id_usuario,))
+
+        resultado = cursor.fetchone()
+        saldo_actual = int(resultado["saldo"] or 0)
+
+        costo = int(producto["costo_puntos"])
+
+        if saldo_actual < costo:
+            return jsonify({
+                "error": (
+                    f"El usuario tiene {saldo_actual} SIGIPUNTOS "
+                    f"pero el producto cuesta {costo}. "
+                    f"Faltan {costo - saldo_actual} puntos."
+                )
+            }), 400
+
+        # ==========================================
+        # 3. INSERTAR CANJE
+        # ==========================================
+
+        cursor.execute("""
+            INSERT INTO canjes (id_usuario, total_puntos)
+            VALUES (%s, %s)
+        """, (id_usuario, costo))
+
+        id_canje = cursor.lastrowid
+
+        # ==========================================
+        # 4. INSERTAR MOVIMIENTO DE PUNTOS
+        # ==========================================
+
+        motivo = (
+            f"Canje de {costo} SIGIPUNTOS "
+            f"por producto: {producto['nombre']}"
+        )
+
+        cursor.execute("""
+            INSERT INTO movimientos_puntos (
+                id_usuario,
+                id_canje,
+                tipo_movimiento,
+                puntos,
+                motivo,
+                id_usuario_admin
+            ) VALUES (%s, %s, %s, %s, %s, %s)
+        """, (
+            id_usuario,
+            id_canje,
+            "CANJE",
+            -costo,
+            motivo,
+            session["id_usuario"]
+        ))
+
+        # ==========================================
+        # 5. ACTUALIZAR STOCK DEL PRODUCTO
+        # ==========================================
+
+        cursor.execute("""
+            UPDATE productos
+            SET stock = stock - 1
+            WHERE id_producto = %s
+        """, (id_producto,))
+
+        # ==========================================
+        # 6. REGISTRAR AUDITORÍA
+        # ==========================================
+
+        cursor.execute("""
+            INSERT INTO auditoria (
+                id_usuario,
+                accion,
+                tabla_afectada,
+                id_registro,
+                descripcion,
+                ip
+            ) VALUES (%s, %s, %s, %s, %s, %s)
+        """, (
+            session["id_usuario"],
+            "CANJE",
+            "productos",
+            id_producto,
+            (
+                f"Canje de {costo} SIGIPUNTOS por "
+                f"'{producto['nombre']}' "
+                f"(Usuario ID: {id_usuario})."
+            ),
+            request.remote_addr
+        ))
+
+        # ==========================================
+        # 7. CONFIRMAR
+        # ==========================================
+
+        conexion.commit()
+
+        saldo_nuevo = saldo_actual - costo
+
+        return jsonify({
+            "success": True,
+            "mensaje": (
+                f"Canje exitoso: {producto['nombre']} "
+                f"por {costo} SIGIPUNTOS."
+            ),
+            "saldo_anterior": saldo_actual,
+            "saldo_nuevo": saldo_nuevo,
+            "puntos_gastados": costo,
+            "producto": producto["nombre"],
+            "numero_canje": f"CANJ-{str(id_canje).zfill(6)}"
+        })
+
+    except Exception as e:
+
+        conexion.rollback()
+        print("ERROR CANJANDO:", e)
+        return jsonify({"error": str(e)}), 500
+
+    finally:
+        cursor.close()
+        conexion.close()
+
 
 # ==========================================
 # EJECUTAR
