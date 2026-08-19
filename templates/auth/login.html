@@ -49,23 +49,15 @@
                 </p>
 
 
-                <!-- MENSAJES FLASH -->
                 {% with messages = get_flashed_messages(with_categories=true) %}
-
                     {% if messages %}
-
                         {% for category, message in messages %}
-
                             <div class="alert alert-{{ category }}">
                                 {{ message }}
                             </div>
-
                         {% endfor %}
-
                     {% endif %}
-
                 {% endwith %}
-
 
                 <form
                     action="{{ url_for('login') }}"
@@ -74,11 +66,9 @@
                 >
 
                     <div class="form-group">
-
                         <label for="numero_identificacion">
                             Número de identificación
                         </label>
-
                         <input
                             type="text"
                             id="numero_identificacion"
@@ -87,7 +77,6 @@
                             maxlength="30"
                             required
                         >
-
                     </div>
 
 

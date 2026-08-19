@@ -8,369 +8,149 @@
 {% endblock %}
 
 {% block content %}
-
 <div class="admin-layout">
-
-    <!-- ============================= -->
     <!-- SIDEBAR -->
-    <!-- ============================= -->
-
     <aside class="admin-sidebar">
-
         <div class="admin-brand">
-
             <div class="admin-logo">
-                <img src="{{ url_for('static', filename='img/logo.png') }}"
-                     alt="Logo SIGIREC">
+                <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo SIGIREC">
             </div>
-
             <h1>SIGIREC</h1>
-
-            <p>
-                Panel administrativo
-            </p>
-
+            <p>Panel administrativo</p>
         </div>
-
         <nav class="admin-nav">
-
-            <span class="admin-menu-title">
-                MENÚ ADMINISTRATIVO
-            </span>
-
-            <a href="{{ url_for('admin_dashboard') }}"
-               class="admin-nav-item">
-
+            <span class="admin-menu-title">MENÚ ADMINISTRATIVO</span>
+            <a href="{{ url_for('admin_dashboard') }}" class="admin-nav-item">
                 <span class="admin-nav-icon">⌂</span>
                 <span>Dashboard</span>
-
             </a>
-
-            <a href="{{ url_for('admin_usuarios') }}"
-               class="admin-nav-item">
-
+            <a href="{{ url_for('admin_usuarios') }}" class="admin-nav-item">
                 <span class="admin-nav-icon">♙</span>
                 <span>Gestión de usuarios</span>
-
             </a>
-
-            <a href="{{ url_for('admin_reciclajes') }}"
-               class="admin-nav-item">
-
+            <a href="{{ url_for('admin_reciclajes') }}" class="admin-nav-item">
                 <span class="admin-nav-icon">♻</span>
                 <span>Reciclajes</span>
-
             </a>
-
-            <a href="#"
-               class="admin-nav-item">
-
+            <a href="{{ url_for('admin_reciclajes') }}" class="admin-nav-item">
                 <span class="admin-nav-icon">◉</span>
                 <span>Análisis IA</span>
-
             </a>
-
-            <a href="{{ url_for('admin_catalogo') }}"
-               class="admin-nav-item active">
-
+            <a href="{{ url_for('admin_catalogo') }}" class="admin-nav-item active">
                 <span class="admin-nav-icon">▣</span>
                 <span>Catálogo</span>
-
             </a>
-
-            <a href="{{ url_for('admin_auditorias') }}"
-            class="admin-nav-item">
-
+            <a href="{{ url_for('admin_auditorias') }}" class="admin-nav-item">
                 <span class="admin-nav-icon">◷</span>
                 <span>Auditorías</span>
-
             </a>
-
         </nav>
-
         <div class="admin-sidebar-bottom">
-
             <div class="admin-user-box">
-
                 <div class="admin-avatar">
                     {{ session["nombre_completo"][0] }}
                 </div>
-
                 <div class="admin-user-info">
-
-                    <strong>
-                        {{ session["nombre_completo"] }}
-                    </strong>
-
-                    <span>
-                        ADMINISTRADOR
-                    </span>
-
+                    <strong>{{ session["nombre_completo"] }}</strong>
+                    <span>ADMINISTRADOR</span>
                 </div>
-
             </div>
-
-            <a href="{{ url_for('logout') }}"
-               class="admin-logout">
-
+            <a href="{{ url_for('logout') }}" class="admin-logout">
                 <span>↪</span>
                 <span>Cerrar sesión</span>
-
             </a>
-
         </div>
-
     </aside>
 
-
-    <!-- ============================= -->
     <!-- CONTENIDO -->
-    <!-- ============================= -->
-
     <main class="admin-main">
-
         <header class="admin-page-header">
-
             <div>
-
-                <span class="page-label">
-                    ADMINISTRACIÓN
-                </span>
-
-                <h2>
-                    Catálogo
-                </h2>
-
-                <p>
-                    Administra los productos disponibles para
-                    el intercambio de SIGIPUNTOS.
-                </p>
-
+                <span class="page-label">ADMINISTRACIÓN</span>
+                <h2>Catálogo</h2>
+                <p>Administra los productos disponibles para el intercambio de SIGIPUNTOS.</p>
             </div>
-
             <div class="admin-header-user">
-
                 <div class="admin-header-avatar">
                     {{ session["nombre_completo"][0] }}
                 </div>
-
                 <div>
-
-                    <strong>
-                        {{ session["nombre_completo"] }}
-                    </strong>
-
-                    <span>
-                        ADMINISTRADOR
-                    </span>
-
+                    <strong>{{ session["nombre_completo"] }}</strong>
+                    <span>ADMINISTRADOR</span>
                 </div>
-
             </div>
-
         </header>
 
-
-        <!-- ============================= -->
         <!-- ENCABEZADO DEL CATÁLOGO -->
-        <!-- ============================= -->
-
         <section class="catalog-header">
-
             <div>
-
-                <span class="catalog-label">
-                    SIGIREC · CATÁLOGO
-                </span>
-
-                <h3>
-                    Productos disponibles
-                </h3>
-
-                <p>
-                    Figuras y objetos elaborados mediante impresión 3D
-                    que pueden ser intercambiados manualmente por los usuarios.
-                </p>
-
+                <span class="catalog-label">SIGIREC · CATÁLOGO</span>
+                <h3>Productos disponibles</h3>
+                <p>Figuras y objetos elaborados mediante impresión 3D que pueden ser intercambiados manualmente por los usuarios.</p>
             </div>
-
             <div class="catalog-count">
-
-                <strong>
-                    {{ productos|length }}
-                </strong>
-
-                <span>
-                    productos
-                </span>
-
+                <strong>{{ productos|length }}</strong>
+                <span>productos</span>
             </div>
-
         </section>
 
-
-        <!-- ============================= -->
         <!-- PRODUCTOS -->
-        <!-- ============================= -->
-
         <section class="catalog-container">
-
             {% if productos %}
-
                 <div class="catalog-grid">
-
                     {% for producto in productos %}
-
                         <article class="product-card">
-
                             <div class="product-image">
-
                                 {% if producto.imagen %}
-
-                                    <img
-                                        src="{{ url_for('static', filename='img/' ~ producto.imagen) }}"
-                                        alt="{{ producto.nombre }}"
-                                    >
-
+                                    <img src="{{ url_for('static', filename='img/' ~ producto.imagen) }}" alt="{{ producto.nombre }}">
                                 {% else %}
-
-                                    <div class="product-no-image">
-                                        ▣
-                                    </div>
-
+                                    <div class="product-no-image">▣</div>
                                 {% endif %}
-
                                 <span class="product-stock">
-
                                     {% if producto.stock > 0 %}
                                         Disponible
                                     {% else %}
                                         Agotado
                                     {% endif %}
-
                                 </span>
-
                             </div>
-
-
                             <div class="product-content">
-
-                                <span class="product-number">
-                                    PRODUCTO #{{ producto.id_producto }}
-                                </span>
-
-                                <h3>
-                                    {{ producto.nombre }}
-                                </h3>
-
-                                <p>
-                                    {{ producto.descripcion }}
-                                </p>
-
-
+                                <span class="product-number">PRODUCTO #{{ producto.id_producto }}</span>
+                                <h3>{{ producto.nombre }}</h3>
+                                <p>{{ producto.descripcion }}</p>
                                 <div class="product-footer">
-
                                     <div class="product-price">
-
-                                        <strong>
-                                            {{ producto.costo_puntos }}
-                                        </strong>
-
-                                        <span>
-                                            SIGIPUNTOS
-                                        </span>
-
+                                        <strong>{{ producto.costo_puntos }}</strong>
+                                        <span>SIGIPUNTOS</span>
                                     </div>
-
                                     <div class="product-stock-info">
-
-                                        <span>
-                                            STOCK
-                                        </span>
-
-                                        <strong>
-                                            {{ producto.stock }}
-                                        </strong>
-
+                                        <span>STOCK</span>
+                                        <strong>{{ producto.stock }}</strong>
                                     </div>
-
                                 </div>
-
                             </div>
-
                         </article>
-
                     {% endfor %}
-
                 </div>
-
             {% else %}
-
                 <div class="catalog-empty">
-
-                    <div class="catalog-empty-icon">
-                        ▣
-                    </div>
-
-                    <h3>
-                        No hay productos registrados
-                    </h3>
-
-                    <p>
-                        Los productos agregados al catálogo
-                        aparecerán aquí.
-                    </p>
-
+                    <div class="catalog-empty-icon">▣</div>
+                    <h3>No hay productos registrados</h3>
+                    <p>Los productos agregados al catálogo aparecerán aquí.</p>
                 </div>
-
             {% endif %}
-
         </section>
 
-
-
-        <!-- ============================= -->
         <!-- INFORMACIÓN DE INTERCAMBIO -->
-        <!-- ============================= -->
-
         <section class="catalog-info">
-
-            <div class="catalog-info-icon">
-                ♻
-            </div>
-
+            <div class="catalog-info-icon">♻</div>
             <div>
-
-                <span>
-                    CANJE DE SIGIPUNTOS
-                </span>
-
-                <h3>
-                    ¿Cómo puedo obtener un producto?
-                </h3>
-
-                <p>
-                    Acumula SIGIPUNTOS participando en las actividades
-                    de reciclaje de SIGIREC. Cuando tengas los puntos
-                    necesarios, consulta el catálogo y elige el producto
-                    que deseas obtener.
-                </p>
-
-                <p>
-                    Para realizar el canje, debes acercarte personalmente
-                    al ambiente de SIGIREC y solicitar el producto al
-                    personal encargado. Allí se verificará tu saldo de
-                    SIGIPUNTOS y se realizará el intercambio de manera manual.
-                </p>
-
+                <span>CANJE DE SIGIPUNTOS</span>
+                <h3>¿Cómo puedo obtener un producto?</h3>
+                <p>Acumula SIGIPUNTOS participando en las actividades de reciclaje de SIGIREC. Cuando tengas los puntos necesarios, consulta el catálogo y elige el producto que deseas obtener.</p>
+                <p>Para realizar el canje, debes acercarte personalmente al ambiente de SIGIREC y solicitar el producto al personal encargado. Allí se verificará tu saldo de SIGIPUNTOS y se realizará el intercambio de manera manual.</p>
             </div>
-
         </section>
-
-
-
     </main>
-
 </div>
-
 {% endblock %}

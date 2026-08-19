@@ -49,7 +49,7 @@
                 <span>Reciclajes</span>
             </a>
 
-            <a href="#" class="admin-menu-item">
+            <a href="{{ url_for('admin_reciclajes') }}" class="admin-menu-item">
                 <span class="admin-menu-icon">◉</span>
                 <span>Análisis IA</span>
             </a>
@@ -60,12 +60,12 @@
             </a>
 
             <a href="{{ url_for('admin_auditorias') }}"
-            class="admin-nav-item">
+                class="admin-menu-item">
 
-                <span class="admin-nav-icon">◷</span>
-                <span>Auditorías</span>
+                    <span class="admin-menu-icon">◷</span>
+                    <span>Auditorías</span>
 
-            </a>
+                </a>
 
         </nav>
 
@@ -169,7 +169,11 @@
 
             <div class="admin-stat-card">
                 <div class="admin-stat-top">
-                    
+                    <span>SIGIPUNTOS</span>
+                    <div class="admin-stat-icon">♻</div>
+                </div>
+                <strong>{{ estadisticas.puntos_entregados }}</strong>
+                <p>SIGIPUNTOS entregados</p>
             </div>
 
             <div class="admin-stat-card">
@@ -310,7 +314,7 @@
 
                         <div class="system-status-name">
 
-                            <span class="status-dot pending"></span>
+                            <span class="status-dot"></span>
 
                             <span>
                                 Inteligencia artificial
@@ -318,8 +322,8 @@
 
                         </div>
 
-                        <strong class="pending-text">
-                            Pendiente
+                        <strong>
+                            Funcional Alpha 3
                         </strong>
 
                     </div>

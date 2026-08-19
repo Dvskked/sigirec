@@ -1,0 +1,639 @@
+{% extends "base.html" %}
+
+{% block title %}Escanear | SIGIREC{% endblock %}
+
+{% block extra_css %}
+<link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='css/escanear.css') }}"
+>
+{% endblock %}
+
+{% block content %}
+
+<div
+    class="scan-page"
+    data-dashboard-url="{{ url_for('dashboard') }}"
+>
+
+    <!-- =====================================================
+         SIDEBAR
+         ===================================================== -->
+
+    <aside class="sidebar">
+
+        <div class="sidebar-brand">
+
+            <div class="sidebar-logo">
+                <img
+                    src="{{ url_for('static', filename='img/logo.png') }}"
+                    alt="Logo SIGIREC"
+                >
+            </div>
+
+            <h1>SIGIREC</h1>
+
+            <p>
+                Sistema de Gestión Inteligente de Recolección de Reciclaje
+            </p>
+
+        </div>
+
+
+        <nav class="sidebar-menu">
+
+            <span class="menu-title">
+                MENÚ
+            </span>
+
+
+            <a
+                href="{{ url_for('dashboard') }}"
+                class="menu-item"
+            >
+                <span class="menu-icon">⌂</span>
+                <span>Inicio</span>
+            </a>
+
+
+            <a
+                href="{{ url_for('informacion') }}"
+                class="menu-item"
+            >
+                <span class="menu-icon">ⓘ</span>
+                <span>Información</span>
+            </a>
+
+
+            <a
+                href="{{ url_for('escanear') }}"
+                class="menu-item active"
+            >
+                <span class="menu-icon">⌁</span>
+                <span>Escanear</span>
+            </a>
+
+
+        </nav>
+
+
+        <!-- =================================================
+             USUARIO
+             ================================================= -->
+
+        <div class="sidebar-bottom">
+
+            <div class="sidebar-user">
+
+                <div class="user-avatar">
+                    {{ usuario.nombre_completo[0] }}
+                </div>
+
+                <div class="user-info">
+
+                    <strong>
+                        {{ usuario.nombre_completo }}
+                    </strong>
+
+                    <span>
+                        {{ usuario.numero_identificacion }}
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <a
+                href="{{ url_for('logout') }}"
+                class="logout-button"
+            >
+                <span>↪</span>
+                <span>Cerrar sesión</span>
+            </a>
+
+        </div>
+
+    </aside>
+
+
+    <!-- =====================================================
+         CONTENIDO PRINCIPAL
+         ===================================================== -->
+
+    <main class="scan-main">
+
+
+        <!-- =================================================
+             HEADER
+             ================================================= -->
+
+        <header class="scan-header">
+
+            <div>
+
+                <span class="page-label">
+                    RECICLAJE INTELIGENTE
+                </span>
+
+                <h2>
+                    Escanear botella
+                </h2>
+
+                <p>
+                    Utiliza la inteligencia artificial de SIGIREC
+                    para identificar tu botella y obtener SIGIPUNTOS.
+                </p>
+
+            </div>
+
+
+            <!-- SALDO -->
+
+            <div class="scan-balance">
+
+                <div class="balance-icon">
+                    ♻
+                </div>
+
+                <div>
+
+                    <span>
+                        MI SALDO
+                    </span>
+
+                    <strong id="current-points">{{ usuario.puntos_totales }}</strong>
+
+                    <small>
+                        SIGIPUNTOS
+                    </small>
+
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <!-- =================================================
+             CONTENEDOR DEL ESCÁNER
+             ================================================= -->
+
+        <section class="scanner-container">
+
+
+            <!-- =================================================
+                 CABECERA DEL ESCÁNER
+                 ================================================= -->
+
+            <div class="scanner-top">
+
+                <div>
+
+                    <span class="card-label">
+                        ESCÁNER IA
+                    </span>
+
+                    <h3>
+                        Reconocimiento de reciclaje
+                    </h3>
+
+                    <p>
+                        Coloca una botella frente a la cámara.
+                        La inteligencia artificial identificará
+                        la botella, tapa y etiqueta.
+                    </p>
+
+                </div>
+
+                <div class="ai-status" id="ai-status">
+
+                    <span class="status-dot"></span>
+
+                    <span id="ai-status-text">
+                        Cámara desactivada
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 CÁMARA
+                 ================================================= -->
+
+            <div class="camera-wrapper">
+
+                <video
+                    id="camera"
+                    autoplay
+                    playsinline
+                    muted
+                ></video>
+
+
+                <!-- PLACEHOLDER -->
+
+                <div
+                    class="camera-placeholder"
+                    id="camera-placeholder"
+                >
+
+                    <div class="camera-placeholder-icon">
+                        ⌁
+                    </div>
+
+                    <h3>
+                        Cámara desactivada
+                    </h3>
+
+                    <p>
+                        Presiona "Escanear botella" para activar
+                        la cámara.
+                    </p>
+
+                </div>
+
+
+                <!-- MARCO DE ESCANEO -->
+
+                <div
+                    class="scan-frame"
+                    id="scan-frame"
+                >
+
+                    <span class="corner top-left"></span>
+                    <span class="corner top-right"></span>
+                    <span class="corner bottom-left"></span>
+                    <span class="corner bottom-right"></span>
+
+                </div>
+
+
+                <!-- LÍNEA DE ESCANEO -->
+
+                <div
+                    class="scan-line"
+                    id="scan-line"
+                ></div>
+
+            </div>
+
+
+            <!-- =================================================
+                 CONTROLES
+                 ================================================= -->
+
+            <div class="camera-controls">
+
+
+                <!-- ACTIVAR CÁMARA -->
+
+                <button
+                    type="button"
+                    id="start-camera"
+                    class="scan-button primary"
+                >
+
+                    <span class="button-icon">
+                        ⌁
+                    </span>
+
+                    <span>
+                        Escanear botella
+                    </span>
+
+                </button>
+
+
+                <!-- TOMAR FOTO -->
+
+                <button
+                    type="button"
+                    id="take-photo"
+                    class="scan-button secondary"
+                    disabled
+                >
+
+                    <span class="button-icon">
+                        ◉
+                    </span>
+
+                    <span>
+                        Tomar foto
+                    </span>
+
+                </button>
+
+            </div>
+
+
+            <!-- =================================================
+                 MENSAJE DE AYUDA
+                 ================================================= -->
+
+            <div class="scanner-help">
+
+                <span class="help-icon">
+                    ⓘ
+                </span>
+
+                <p>
+                    Para obtener la mayor precisión posible,
+                    coloca la botella completa dentro del área
+                    de escaneo y asegúrate de que haya buena iluminación.
+                </p>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             RESULTADO DEL ANÁLISIS
+             ===================================================== -->
+
+        <section
+            class="scan-result"
+            id="scan-result"
+            style="display: none;"
+        >
+
+            <div class="result-image-container">
+
+                <img
+                    id="result-image"
+                    class="result-image"
+                    alt="Resultado del análisis de SIGIREC"
+                >
+
+            </div>
+
+
+            <div class="result-information">
+
+                <span class="card-label">
+                    RESULTADO DEL ANÁLISIS
+                </span>
+
+                <h3 id="result-title">
+                    Resultado
+                </h3>
+
+                <p id="result-description">
+                    Resultado del reconocimiento.
+                </p>
+
+                <div
+                    class="detection-details"
+                    id="detection-details"
+                    style="display: none;"
+                ></div>
+
+                <div
+                    class="retry-message"
+                    id="retry-message"
+                    style="display: none;"
+                >
+
+                    <span>⚠</span>
+
+                    <p>
+                        <strong>Intenta de nuevo.</strong>
+                        Coloca la botella dentro del marco
+                        de escaneo con buena iluminación
+                        y presiona "Tomar foto".
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="result-points">
+
+                <span>
+                    SIGIPUNTOS
+                </span>
+
+                <strong id="result-points-value">
+                    0
+                </strong>
+
+            </div>
+
+
+            <button
+                type="button"
+                id="recycle-button"
+                class="recycle-button"
+                style="display: none;"
+            >
+                <span>♻ RECICLAR</span>
+            </button>
+
+        </section>
+
+
+        <!-- =====================================================
+             CARGANDO
+             ===================================================== -->
+
+        <section
+            class="scan-loading"
+            id="scan-loading"
+            style="display: none;"
+        >
+
+            <div class="loading-spinner"></div>
+
+            <div>
+
+                <strong>
+                    Analizando botella...
+                </strong>
+
+                <p>
+                    La inteligencia artificial está procesando
+                    la imagen.
+                </p>
+
+            </div>
+
+
+        </section>
+
+
+        <!-- =====================================================
+             INFORMACIÓN DE PUNTOS
+             ===================================================== -->
+
+        <section class="points-information">
+
+            <div class="points-information-header">
+
+                <span class="card-label">
+                    SISTEMA DE PUNTOS
+                </span>
+
+                <h3>
+                    ¿Cómo se calculan tus SIGIPUNTOS?
+                </h3>
+
+            </div>
+
+
+            <div class="points-rules">
+
+                <div class="point-rule">
+
+                    <div class="point-rule-icon">
+                        ♻
+                    </div>
+
+                    <div>
+
+                        <strong>
+                            Botella
+                        </strong>
+
+                        <span>
+                            +50 SIGIPUNTOS
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <div class="point-rule">
+
+                    <div class="point-rule-icon">
+                        ◉
+                    </div>
+
+                    <div>
+
+                        <strong>
+                            Tapa
+                        </strong>
+
+                        <span>
+                            +10 SIGIPUNTOS
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <div class="point-rule">
+
+                    <div class="point-rule-icon">
+                        ▤
+                    </div>
+
+                    <div>
+
+                        <strong>
+                            Etiqueta
+                        </strong>
+
+                        <span>
+                            +5 SIGIPUNTOS
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <p class="points-example">
+                Una botella con tapa y etiqueta puede obtener
+                hasta <strong>65 SIGIPUNTOS</strong>.
+            </p>
+
+        </section>
+
+
+        <!-- =====================================================
+             CANVAS OCULTO
+             ===================================================== -->
+
+        <canvas
+            id="canvas"
+            style="display: none;"
+        ></canvas>
+
+
+    </main>
+
+</div>
+
+
+<!-- =========================================================
+     MODAL ALERTA PERSONALIZADA
+     ========================================================= -->
+
+<div
+    class="sigi-modal-overlay"
+    id="sigi-modal-overlay"
+>
+
+    <div class="sigi-modal">
+
+        <div
+            class="sigi-modal-icon success"
+            id="sigi-modal-icon"
+        >
+            ♻
+        </div>
+
+        <h3 id="sigi-modal-title">
+            Botella registrada
+        </h3>
+
+        <p id="sigi-modal-text">
+            Tu botella fue registrada correctamente.
+        </p>
+
+        <div
+            class="modal-points"
+            id="sigi-modal-points"
+        >
+            <span>SIGIPUNTOS OBTENIDOS</span>
+            <strong id="sigi-modal-points-value">0</strong>
+        </div>
+
+        <p
+            class="modal-comprobante"
+            id="sigi-modal-comprobante"
+        >
+            Comprobante: <strong id="sigi-modal-comp-num">—</strong>
+        </p>
+
+        <button
+            type="button"
+            class="sigi-modal-btn"
+            id="sigi-modal-btn"
+        >
+            ACEPTAR
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     JAVASCRIPT DEL ESCÁNER
+     ========================================================= -->
+
+<script
+    src="{{ url_for('static', filename='js/escanear.js') }}"
+></script>
+
+{% endblock %}

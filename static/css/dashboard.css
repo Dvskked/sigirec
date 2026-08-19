@@ -206,12 +206,9 @@
 
 
 .menu-item.active {
-
     color: #7cff6b;
-
-    background: rgba(124,255,107,0.10);
-
-    border: 1px solid rgba(124,255,107,0.10);
+    background: rgba(124, 255, 107, 0.10);
+    border: 1px solid rgba(124, 255, 107, 0.10);
 
 }
 
@@ -899,38 +896,24 @@
 
 
 .scan-button {
-
-    flex-shrink: 0;
-
+    height: 48px;
     display: flex;
-
     align-items: center;
-
-    gap: 8px;
-
-    padding: 13px 20px;
-
-    border-radius: 8px;
-
-    background: #7cff6b;
-
-    color: #071008;
-
+    gap: 13px;
+    padding: 0 14px;
+    margin-bottom: 6px;
+    border-radius: 9px;
+    color: #9aa7a0;
     text-decoration: none;
-
-    font-size: 12px;
-
-    font-weight: 700;
-
-    transition: 0.2s ease;
-
+    font-size: 13px;
+    transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
 }
 
 
 .scan-button:hover {
 
-    background: #96ff87;
-
+    background: rgba(124,255,107,0.06);
+    color: white;
     transform: translateY(-2px);
 
     box-shadow:

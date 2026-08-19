@@ -2,6 +2,7 @@
 {% block title %}Inicio | SIGIREC{% endblock %}
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/informacion.css') }}">
 {% endblock %}
 {% block content %}
 <div class="dashboard">
@@ -23,13 +24,9 @@
                 <span class="menu-icon">ⓘ</span>
                 <span>Información</span>
             </a>
-            <a href="#" class="menu-item">
+            <a href="{{ url_for('escanear') }}" class="menu-item">
                 <span class="menu-icon">⌁</span>
                 <span>Escanear</span>
-            </a>
-            <a href="#" class="menu-item">
-                <span class="menu-icon">▣</span>
-                <span>Tienda</span>
             </a>
         </nav>
         <div class="sidebar-bottom">
@@ -166,10 +163,11 @@
                 <p>Deposita tu botella y comienza el proceso de escaneo.</p>
             </div>
 
-            <a href="#" class="scan-button">
+            <a href="{{ url_for('escanear') }}" class="scan-button">
                 <span>⌁</span>
                 Escanear botella
             </a>
+
         </section>
     </main>
 </div>

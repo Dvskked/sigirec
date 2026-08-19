@@ -1,3 +1,340 @@
+/* ==========================================
+   SIDEBAR
+========================================== */
+
+.sidebar {
+
+    width: 270px;
+
+    min-height: 100vh;
+
+    position: fixed;
+
+    left: 0;
+
+    top: 0;
+
+    bottom: 0;
+
+    display: flex;
+
+    flex-direction: column;
+
+    padding: 28px 20px;
+
+    background: #0b110e;
+
+    border-right: 1px solid rgba(124, 255, 107, 0.12);
+
+}
+
+
+/* ==========================================
+   SIDEBAR BRAND
+========================================== */
+
+.sidebar-brand {
+
+    text-align: center;
+
+    padding: 5px 10px 30px;
+
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+
+}
+
+
+.sidebar-logo {
+
+    width: 62px;
+
+    height: 62px;
+
+    margin: 0 auto 14px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+}
+
+
+.sidebar-logo img {
+
+    width: 100%;
+
+    height: 100%;
+
+    object-fit: contain;
+
+    transition:
+        transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+        filter 0.4s ease;
+
+}
+
+
+.sidebar-logo:hover img {
+
+    transform: scale(1.12);
+
+    filter:
+        drop-shadow(0 0 7px rgba(124,255,107,0.7))
+        drop-shadow(0 0 16px rgba(124,255,107,0.35));
+
+}
+
+
+.sidebar-brand h1 {
+
+    font-size: 22px;
+
+    letter-spacing: 3px;
+
+    margin-bottom: 7px;
+
+}
+
+
+.sidebar-brand p {
+
+    font-size: 10px;
+
+    line-height: 1.5;
+
+    color: #68736d;
+
+}
+
+
+/* ==========================================
+   MENU
+========================================== */
+
+.sidebar-menu {
+
+    padding-top: 28px;
+
+}
+
+
+.menu-title {
+
+    display: block;
+
+    padding: 0 13px;
+
+    margin-bottom: 12px;
+
+    font-size: 10px;
+
+    font-weight: 700;
+
+    letter-spacing: 1.5px;
+
+    color: #56615b;
+
+}
+
+
+.menu-item {
+
+    height: 48px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 13px;
+
+    padding: 0 14px;
+
+    margin-bottom: 6px;
+
+    border-radius: 9px;
+
+    color: #9aa7a0;
+
+    text-decoration: none;
+
+    font-size: 13px;
+
+    transition:
+        background 0.2s ease,
+        color 0.2s ease,
+        transform 0.2s ease;
+
+}
+
+
+.menu-icon {
+
+    width: 20px;
+
+    text-align: center;
+
+    font-size: 17px;
+
+}
+
+
+.menu-item:hover {
+
+    color: #f1f5f2;
+
+    background: rgba(124,255,107,0.06);
+
+    transform: translateX(3px);
+
+}
+
+
+.menu-item.active {
+
+    color: #7cff6b;
+
+    background: rgba(124,255,107,0.10);
+
+    border: 1px solid rgba(124,255,107,0.10);
+
+}
+
+
+.menu-item.active .menu-icon {
+
+    text-shadow:
+        0 0 10px rgba(124,255,107,0.6);
+
+}
+
+/* ==========================================
+   SIDEBAR BOTTOM
+========================================== */
+
+.sidebar-bottom {
+
+    margin-top: auto;
+
+}
+
+
+.sidebar-user {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    padding: 14px;
+
+    margin-bottom: 10px;
+
+    border-radius: 10px;
+
+    background: rgba(255,255,255,0.025);
+
+}
+
+
+.user-avatar,
+.header-avatar {
+
+    width: 38px;
+
+    height: 38px;
+
+    flex-shrink: 0;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background: rgba(124,255,107,0.1);
+
+    border: 1px solid rgba(124,255,107,0.25);
+
+    color: #7cff6b;
+
+    font-weight: 700;
+
+}
+
+
+.user-info {
+
+    min-width: 0;
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 3px;
+
+}
+
+
+.user-info strong {
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
+
+    font-size: 12px;
+
+}
+
+
+.user-info span {
+
+    color: #68736d;
+
+    font-size: 10px;
+
+}
+
+
+.logout-button {
+
+    height: 43px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 8px;
+
+    border-radius: 8px;
+
+    text-decoration: none;
+
+    color: #8d9892;
+
+    font-size: 12px;
+
+    transition: 0.2s ease;
+
+}
+
+
+.logout-button:hover {
+
+    color: #ff8585;
+
+    background: rgba(255,70,70,0.06);
+
+}
+
+
 .info-hero {
     display: flex;
     align-items: center;
