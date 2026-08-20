@@ -20,9 +20,7 @@ from conexion import obtener_conexion
 
 
 
-model = YOLO(
-    r"C:\Users\siriu\OneDrive\Escritorio\SigiRec (4)\SigiRec\runs\detect\train-5\weights\best.pt"
-)
+model = YOLO('runs/detect/train-5/weights/best.pt')
 
 
 print("======================================")
