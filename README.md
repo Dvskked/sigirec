@@ -103,4 +103,4 @@ SigiRec/
 | Rol | Descripción |
 |-----|-------------|
 | USUARIO | Acceso estándar al dashboard y escaneo |
-| ADMINISTRADOR | Gestión completa del sistema |
+| ADMINISTRADOR | Gestión completa del sistema... |
