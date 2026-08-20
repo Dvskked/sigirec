@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import base64
+import os
 
 from flask import (
     Flask,
@@ -18,16 +19,37 @@ from ultralytics import YOLO
 from conexion import obtener_conexion
 
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
+model = None
+model_error = None
 
-model = YOLO('runs/detect/train-5/weights/best.pt')
+try:
+    model_path = os.path.join(
+        BASE_DIR,
+        'runs', 'detect',
+        'train-5', 'weights',
+        'best.pt'
+    )
 
+    if not os.path.exists(model_path):
+        raise FileNotFoundError(
+            "Modelo no encontrado en: " + model_path
+        )
 
-print("======================================")
-print("MODELO SIGIREC CARGADO")
-print("RUTA:", model.ckpt_path)
-print("CLASES:", model.names)
-print("======================================")
+    model = YOLO(model_path)
+
+    print("======================================")
+    print("MODELO SIGIREC CARGADO")
+    print("RUTA:", model.ckpt_path)
+    print("CLASES:", model.names)
+    print("======================================")
+
+except Exception as e:
+    model_error = str(e)
+    print("======================================")
+    print("ERROR CARGANDO MODELO:", e)
+    print("======================================")
 
 app = Flask(__name__)
 app.secret_key = "SIGIREC_CAMBIAR_ESTA_CLAVE"
@@ -401,6 +423,14 @@ def api_escanear():
             "error": "No se recibió ninguna imagen."
         }), 400
 
+    if model is None:
+        return jsonify({
+            "error":
+                "El modelo de IA no está disponible. "
+                "Error al cargar: " +
+                (model_error or "desconocido")
+        }), 503
+
     archivo = request.files["imagen"]
 
     if archivo.filename == "":
@@ -416,6 +446,8 @@ def api_escanear():
 
         datos = archivo.read()
 
+        print("TAMAÑO IMAGEN RECIBIDA:", len(datos), "bytes")
+
         imagen_array = np.frombuffer(
             datos,
             np.uint8
@@ -427,9 +459,15 @@ def api_escanear():
         )
 
         if frame is None:
+            print("ERROR: cv2.imdecode devolvió None")
             return jsonify({
                 "error": "No fue posible procesar la imagen."
             }), 400
+
+        print(
+            "IMAGEN DECODED:",
+            frame.shape[1], "x", frame.shape[0]
+        )
 
 
         # =====================================================
@@ -452,11 +490,19 @@ def api_escanear():
         # ANALIZAR CON YOLO
         # =====================================================
 
-        resultados = model(
-            frame,
-            conf=0.15,
-            verbose=False
-        )
+        try:
+            resultados = model(
+                frame,
+                conf=0.15,
+                verbose=False
+            )
+        except Exception as yolo_err:
+            print("ERROR YOLO INFERENCE:", yolo_err)
+            return jsonify({
+                "error":
+                    "Error del modelo de IA: " +
+                    str(yolo_err)
+            }), 500
 
         resultado = resultados[0]
 
