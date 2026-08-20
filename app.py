@@ -2,6 +2,10 @@ import cv2
 import numpy as np
 import base64
 import os
+import traceback
+
+os.environ.setdefault("OMP_NUM_THREADS", "1")
+os.environ.setdefault("MKL_NUM_THREADS", "1")
 
 from flask import (
     Flask,
@@ -53,6 +57,28 @@ except Exception as e:
 
 app = Flask(__name__)
 app.secret_key = "SIGIREC_CAMBIAR_ESTA_CLAVE"
+
+cors_origins = [
+    origin.strip()
+    for origin in os.getenv(
+        "CORS_ORIGINS",
+        "https://sigirec.onrender.com"
+    ).split(",")
+    if origin.strip()
+]
+
+@app.after_request
+def add_cors_headers(response):
+    origin = request.headers.get("Origin")
+
+    if origin in cors_origins:
+        response.headers["Access-Control-Allow-Origin"] = origin
+        response.headers["Access-Control-Allow-Credentials"] = "true"
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+        response.headers["Access-Control-Allow-Headers"] = "Content-Type"
+        response.headers["Vary"] = "Origin"
+
+    return response
 
 # ==========================================
 # INICIO
@@ -494,6 +520,9 @@ def api_escanear():
             resultados = model(
                 frame,
                 conf=0.15,
+                imgsz=320,
+                device="cpu",
+                max_det=10,
                 verbose=False
             )
         except Exception as yolo_err:
@@ -690,6 +719,7 @@ def api_escanear():
             "ERROR ANALIZANDO:",
             e
         )
+        traceback.print_exc()
 
         return jsonify({
             "error": str(e)
