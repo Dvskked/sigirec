@@ -1,7 +1,7 @@
 Flask
 ultralytics
 gunicorn
-PyMySQL
+mysql-connector-python
 opencv-python-headless
 numpy
 --extra-index-url https://download.pytorch.org/whl/cpu
