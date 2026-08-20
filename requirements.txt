@@ -1,9 +1,9 @@
 Flask
-ultralytics
 gunicorn
 mysql-connector-python
 opencv-python-headless
 numpy
 --extra-index-url https://download.pytorch.org/whl/cpu
-torch
-torchvision
+torch==2.5.1+cpu
+torchvision==0.20.1+cpu
+ultralytics

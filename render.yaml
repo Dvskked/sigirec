@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: sigirec
+    runtime: python
+    plan: standard
+    buildCommand: pip install --upgrade pip && pip install -r requirements.txt
+    startCommand: gunicorn app:app --workers 1 --threads 1 --timeout 180
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.11
+      - key: OMP_NUM_THREADS
+        value: "1"
+      - key: MKL_NUM_THREADS
+        value: "1"
