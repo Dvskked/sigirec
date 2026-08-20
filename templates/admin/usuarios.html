@@ -9,8 +9,10 @@
 {% block content %}
 
 <div class="admin-layout">
+    <div class="mobile-overlay" id="mobile-overlay"></div>
+    <button class="mobile-hamburger" id="mobile-hamburger" aria-label="Abrir menú">&#9776;</button>
 
-    <aside class="admin-sidebar">
+    <aside class="admin-sidebar" id="mobile-sidebar">
 
         <div class="admin-brand">
             <div class="admin-logo">
@@ -177,7 +179,21 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <a href="#usuario-{{ usuario.id_usuario }}" class="manage-button">Gestionar</a>
+                                        <button type="button" class="manage-button"
+                                            onclick="abrirModalUsuario({
+                                                id: {{ usuario.id_usuario }},
+                                                nombre: '{{ usuario.nombre_completo | e }}',
+                                                identificacion: '{{ usuario.numero_identificacion | e }}',
+                                                correo: '{{ usuario.correo | e }}',
+                                                telefono: '{{ usuario.telefono | e }}',
+                                                rol: '{{ usuario.rol | e }}',
+                                                tipo: '{{ usuario.tipo_usuario | e }}',
+                                                programa: '{{ usuario.programa_formacion | e }}',
+                                                ficha: '{{ usuario.numero_ficha | e }}',
+                                                puntos: {{ usuario.puntos_totales }},
+                                                escaneos: {{ usuario.escaneos_ia }},
+                                                esAdmin: {{ 'true' if usuario.id_usuario == session['id_usuario'] else 'false' }}
+                                            })">Gestionar</button>
                                     </td>
                                 </tr>
                             {% endfor %}
@@ -194,144 +210,189 @@
 
         </section>
 
-        {% if usuarios %}
-            <section class="management-list">
-
-                <div class="management-list-header">
-                    <span class="card-label">ADMINISTRACIÓN INDIVIDUAL</span>
-                    <h3>Gestionar usuarios</h3>
-                    <p>Selecciona la información de cada usuario para modificar sus datos o administrar sus SIGIPUNTOS.</p>
-                </div>
-
-                {% for usuario in usuarios %}
-                    <section id="usuario-{{ usuario.id_usuario }}" class="user-management-card">
-
-                        <div class="management-header">
-                            <div class="management-user-title">
-                                <span class="card-label">GESTIONAR USUARIO</span>
-                                <h3>{{ usuario.nombre_completo }}</h3>
-                                <p>ID interno: {{ usuario.id_usuario }}</p>
-                            </div>
-
-                            <div class="management-points">
-                                <span>SALDO ACTUAL</span>
-                                <strong>{{ usuario.puntos_totales }}</strong>
-                                <small>SIGIPUNTOS</small>
-                            </div>
-                        </div>
-
-                        <div class="management-grid">
-
-                            <!-- Sección Información Personal -->
-                            <div class="management-section">
-                                <div class="section-title">INFORMACIÓN PERSONAL</div>
-
-                                <form action="{{ url_for('admin_editar_usuario', id_usuario=usuario.id_usuario) }}" method="POST">
-                                    <div class="form-grid">
-                                        <div class="form-group">
-                                            <label>Nombre completo</label>
-                                            <input type="text" name="nombre_completo" value="{{ usuario.nombre_completo }}" required>
-                                        </div>
-
-                                        <div class="form-group">
-                                            <label>Identificación</label>
-                                            <input type="text" name="numero_identificacion" value="{{ usuario.numero_identificacion }}" required>
-                                        </div>
-
-                                        <div class="form-group">
-                                            <label>Correo</label>
-                                            <input type="email" name="correo" value="{{ usuario.correo }}" required>
-                                        </div>
-
-                                        <div class="form-group">
-                                            <label>Teléfono</label>
-                                            <input type="text" name="telefono" value="{{ usuario.telefono or '' }}">
-                                        </div>
-
-                                        <div class="form-group">
-                                            <label>Rol</label>
-                                            <select name="rol" required>
-                                                <option value="APRENDIZ" {% if usuario.rol == "APRENDIZ" %}selected{% endif %}>Aprendiz</option>
-                                                <option value="INSTRUCTOR" {% if usuario.rol == "INSTRUCTOR" %}selected{% endif %}>Instructor</option>
-                                                <option value="AREA_ADMINISTRATIVA" {% if usuario.rol == "AREA_ADMINISTRATIVA" %}selected{% endif %}>Administración</option>
-                                                <option value="EXTERNO" {% if usuario.rol == "EXTERNO" %}selected{% endif %}>Externo</option>
-                                            </select>
-                                        </div>
-
-                                        <div class="form-group">
-                                            <label>Tipo de usuario</label>
-                                            <select name="tipo_usuario" required>
-                                                <option value="USUARIO" {% if usuario.tipo_usuario == "USUARIO" %}selected{% endif %}>Usuario</option>
-                                                <option value="ADMINISTRADOR" {% if usuario.tipo_usuario == "ADMINISTRADOR" %}selected{% endif %}>Administrador</option>
-                                            </select>
-                                        </div>
-
-                                        <div class="form-group full">
-                                            <label>Programa de formación</label>
-                                            <input type="text" name="programa_formacion" value="{{ usuario.programa_formacion }}" required>
-                                        </div>
-
-                                        <div class="form-group">
-                                            <label>Número de ficha</label>
-                                            <input type="text" name="numero_ficha" value="{{ usuario.numero_ficha }}" required>
-                                        </div>
-                                    </div>
-
-                                    <div class="form-actions">
-                                        <button type="submit" class="save-button">Guardar cambios</button>
-
-                                        {% if usuario.id_usuario != session["id_usuario"] %}
-                                            <form action="{{ url_for('admin_eliminar_usuario', id_usuario=usuario.id_usuario) }}" method="POST"
-                                                onsubmit="return confirm('¿Estás seguro de eliminar a {{ usuario.nombre_completo }}? Esta acción no se puede deshacer.');">
-                                                <button type="submit" class="delete-button">Eliminar usuario</button>
-                                            </form>
-                                        {% endif %}
-                                    </div>
-                                </form>
-                            </div>
-
-                            <!-- Sección Gestión de Puntos -->
-                            <div class="management-section points-section">
-                                <div class="section-title">GESTIÓN DE SIGIPUNTOS</div>
-
-                                <div class="current-balance">
-                                    <span>Saldo actual</span>
-                                    <strong>{{ usuario.puntos_totales }}</strong>
-                                    <small>SIGIPUNTOS</small>
-                                </div>
-
-                                <form action="{{ url_for('agregar_puntos', id_usuario=usuario.id_usuario) }}" method="POST" class="points-form">
-                                    <label>Agregar puntos</label>
-                                    <input type="number" name="puntos" min="1" placeholder="Cantidad" required>
-                                    <input type="text" name="motivo" placeholder="Motivo de la bonificación">
-                                    <button type="submit" class="add-points-button">+ Agregar puntos</button>
-                                </form>
-
-                                <form action="{{ url_for('quitar_puntos', id_usuario=usuario.id_usuario) }}" method="POST" class="points-form">
-                                    <label>Quitar puntos</label>
-                                    <input type="number" name="puntos" min="1" max="{{ usuario.puntos_totales }}" placeholder="Cantidad" required>
-                                    <input type="text" name="motivo" placeholder="Motivo del descuento">
-                                    <button type="submit" class="remove-points-button">− Quitar puntos</button>
-                                </form>
-
-                                <div class="user-summary">
-                                    <div>
-                                        <span>Escaneos IA realizados:</span>
-                                        <strong>{{ usuario.escaneos_ia }}</strong>
-                                    </div>
-                                </div>
-                            </div>
-
-                        </div>
-
-                    </section>
-                {% endfor %}
-
-            </section>
-        {% endif %}
-
     </main>
 
 </div>
 
+<!-- MODAL GESTIÓN DE USUARIO -->
+<div class="modal-overlay" id="modal-usuario-overlay">
+    <div class="modal-usuario">
+
+        <div class="modal-usuario-header">
+            <div>
+                <span class="card-label">GESTIONAR USUARIO</span>
+                <h3 id="modal-usuario-nombre">—</h3>
+                <p id="modal-usuario-id">ID interno: —</p>
+            </div>
+            <div class="modal-usuario-saldo">
+                <span>SALDO</span>
+                <strong id="modal-usuario-puntos">0</strong>
+                <small>SIGIPUNTOS</small>
+            </div>
+        </div>
+
+        <div class="modal-usuario-tabs">
+            <button class="modal-tab active" onclick="cambiarTab('editar')">Editar datos</button>
+            <button class="modal-tab" onclick="cambiarTab('puntos')">SIGIPUNTOS</button>
+        </div>
+
+        <!-- TAB EDITAR -->
+        <div class="modal-tab-content active" id="tab-editar">
+            <form id="form-editar-usuario" method="POST">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Nombre completo</label>
+                        <input type="text" name="nombre_completo" id="m-nombre" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Identificación</label>
+                        <input type="text" name="numero_identificacion" id="m-identificacion" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Correo</label>
+                        <input type="email" name="correo" id="m-correo" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Teléfono</label>
+                        <input type="text" name="telefono" id="m-telefono">
+                    </div>
+                    <div class="form-group">
+                        <label>Rol</label>
+                        <select name="rol" id="m-rol" required>
+                            <option value="APRENDIZ">Aprendiz</option>
+                            <option value="INSTRUCTOR">Instructor</option>
+                            <option value="AREA_ADMINISTRATIVA">Administración</option>
+                            <option value="EXTERNO">Externo</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Tipo de usuario</label>
+                        <select name="tipo_usuario" id="m-tipo" required>
+                            <option value="USUARIO">Usuario</option>
+                            <option value="ADMINISTRADOR">Administrador</option>
+                        </select>
+                    </div>
+                    <div class="form-group full">
+                        <label>Programa de formación</label>
+                        <input type="text" name="programa_formacion" id="m-programa" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Número de ficha</label>
+                        <input type="text" name="numero_ficha" id="m-ficha" required>
+                    </div>
+                </div>
+                <div class="modal-usuario-actions">
+                    <button type="submit" class="save-button">Guardar cambios</button>
+                    <button type="button" class="delete-button" id="m-btn-eliminar" onclick="confirmarEliminar()">Eliminar usuario</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- TAB PUNTOS -->
+        <div class="modal-tab-content" id="tab-puntos">
+            <div class="modal-balance">
+                <span>Saldo actual</span>
+                <strong id="modal-usuario-puntos-2">0</strong>
+                <small>SIGIPUNTOS</small>
+            </div>
+
+            <form id="form-agregar-puntos" method="POST" class="points-form">
+                <label>Agregar puntos</label>
+                <div class="points-row">
+                    <input type="number" name="puntos" min="1" placeholder="Cantidad" required>
+                    <input type="text" name="motivo" placeholder="Motivo">
+                    <button type="submit" class="add-points-button">+ Agregar</button>
+                </div>
+            </form>
+
+            <form id="form-quitar-puntos" method="POST" class="points-form">
+                <label>Quitar puntos</label>
+                <div class="points-row">
+                    <input type="number" name="puntos" min="1" placeholder="Cantidad" required>
+                    <input type="text" name="motivo" placeholder="Motivo">
+                    <button type="submit" class="remove-points-button">− Quitar</button>
+                </div>
+            </form>
+
+            <div class="modal-summary">
+                <span>Escaneos IA:</span>
+                <strong id="modal-usuario-escaneos">0</strong>
+            </div>
+        </div>
+
+        <button type="button" class="modal-usuario-close" onclick="cerrarModalUsuario()">Cerrar</button>
+
+    </div>
+</div>
+<script>
+(function(){
+    var h=document.getElementById("mobile-hamburger");
+    var s=document.getElementById("mobile-sidebar");
+    var o=document.getElementById("mobile-overlay");
+    if(h&&s&&o){
+        h.addEventListener("click",function(){s.classList.toggle("mobile-open");o.classList.toggle("active");});
+        o.addEventListener("click",function(){s.classList.remove("mobile-open");o.classList.remove("active");});
+    }
+})();
+
+var usuarioActual = null;
+
+function abrirModalUsuario(u) {
+    usuarioActual = u;
+    document.getElementById("modal-usuario-nombre").textContent = u.nombre;
+    document.getElementById("modal-usuario-id").textContent = "ID interno: " + u.id;
+    document.getElementById("modal-usuario-puntos").textContent = u.puntos;
+    document.getElementById("modal-usuario-puntos-2").textContent = u.puntos;
+    document.getElementById("modal-usuario-escaneos").textContent = u.escaneos;
+
+    document.getElementById("m-nombre").value = u.nombre;
+    document.getElementById("m-identificacion").value = u.identificacion;
+    document.getElementById("m-correo").value = u.correo;
+    document.getElementById("m-telefono").value = u.telefono;
+    document.getElementById("m-rol").value = u.rol;
+    document.getElementById("m-tipo").value = u.tipo;
+    document.getElementById("m-programa").value = u.programa;
+    document.getElementById("m-ficha").value = u.ficha;
+
+    document.getElementById("form-editar-usuario").action = "/admin/usuarios/editar/" + u.id;
+    document.getElementById("form-agregar-puntos").action = "/admin/usuarios/puntos/agregar/" + u.id;
+    document.getElementById("form-quitar-puntos").action = "/admin/usuarios/puntos/quitar/" + u.id;
+
+    var btnEliminar = document.getElementById("m-btn-eliminar");
+    btnEliminar.style.display = u.esAdmin ? "none" : "";
+
+    document.getElementById("modal-usuario-overlay").classList.add("visible");
+}
+
+function cerrarModalUsuario() {
+    document.getElementById("modal-usuario-overlay").classList.remove("visible");
+}
+
+function confirmarEliminar() {
+    if (usuarioActual && confirm("¿Estás seguro de eliminar a " + usuarioActual.nombre + "? Esta acción no se puede deshacer.")) {
+        var f = document.createElement("form");
+        f.method = "POST";
+        f.action = "/admin/usuarios/eliminar/" + usuarioActual.id;
+        document.body.appendChild(f);
+        f.submit();
+    }
+}
+
+function cambiarTab(tab) {
+    document.querySelectorAll(".modal-tab").forEach(function(t){ t.classList.remove("active"); });
+    document.querySelectorAll(".modal-tab-content").forEach(function(c){ c.classList.remove("active"); });
+
+    if (tab === "editar") {
+        document.querySelectorAll(".modal-tab")[0].classList.add("active");
+        document.getElementById("tab-editar").classList.add("active");
+    } else {
+        document.querySelectorAll(".modal-tab")[1].classList.add("active");
+        document.getElementById("tab-puntos").classList.add("active");
+    }
+}
+
+document.getElementById("modal-usuario-overlay").addEventListener("click", function(e) {
+    if (e.target === this) cerrarModalUsuario();
+});
+</script>
 {% endblock %}

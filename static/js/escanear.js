@@ -567,9 +567,26 @@ document.addEventListener("DOMContentLoaded", () => {
                                 "/api/escanear",
                                 {
                                     method: "POST",
-                                    body: formData
+                                    body: formData,
+                                    credentials: "same-origin"
                                 }
                             );
+
+                        const contentType =
+                            response.headers
+                                .get("content-type") || "";
+
+                        if (
+                            !contentType
+                                .includes("application/json")
+                        ) {
+
+                            throw new Error(
+                                "El servidor no respondió correctamente. " +
+                                "Intenta de nuevo en unos segundos."
+                            );
+
+                        }
 
                         const data =
                             await response.json();
@@ -818,9 +835,26 @@ document.addEventListener("DOMContentLoaded", () => {
                                     resultadoAnalisis.puntos_etiqueta,
                                 puntos:
                                     resultadoAnalisis.puntos
-                            })
+                            }),
+                            credentials: "same-origin"
                         }
                     );
+
+                const contentType =
+                    response.headers
+                        .get("content-type") || "";
+
+                if (
+                    !contentType
+                        .includes("application/json")
+                ) {
+
+                    throw new Error(
+                        "El servidor no respondió correctamente. " +
+                        "Intenta de nuevo en unos segundos."
+                    );
+
+                }
 
                 const data =
                     await response.json();

@@ -495,17 +495,25 @@
     }
 
     .admin-sidebar {
-        width: 100%;
-        min-width: 100%;
-        min-height: auto;
+        position: fixed;
+        z-index: 1000;
+        width: 260px;
+        min-width: 260px;
+        min-height: 100vh;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+    }
+
+    .admin-sidebar.mobile-open {
+        transform: translateX(0);
     }
 
     .admin-menu {
-        display: none;
+        display: block;
     }
 
     .admin-sidebar-bottom {
-        display: none;
+        display: block;
     }
 
     .admin-stat-grid {
@@ -513,7 +521,7 @@
     }
 
     .admin-main {
-        padding: 20px;
+        padding: 60px 18px 20px;
     }
 
     .admin-project-card {

@@ -1701,3 +1701,51 @@
     }
 
 }
+
+
+@media (max-width: 700px) {
+
+    .sidebar {
+        position: fixed;
+        z-index: 1000;
+        width: 260px;
+        min-width: 260px;
+        padding: 28px 20px;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+    }
+
+    .sidebar.mobile-open {
+        transform: translateX(0);
+    }
+
+    .sidebar-brand {
+        border-bottom: 1px solid #182219;
+    }
+
+    .scan-main {
+        padding: 60px 18px 25px;
+    }
+
+    .scan-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .camera-wrapper {
+        height: 350px;
+    }
+
+    .camera-controls {
+        flex-direction: column;
+    }
+
+    .scan-button {
+        width: 100%;
+    }
+
+    .points-rules {
+        grid-template-columns: 1fr;
+    }
+
+}

@@ -868,18 +868,26 @@
   }
 
   .admin-sidebar {
-    width: 100%;
-    min-width: 100%;
-    min-height: auto;
+    position: fixed;
+    z-index: 1000;
+    width: 260px;
+    min-width: 260px;
+    min-height: 100vh;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+
+  .admin-sidebar.mobile-open {
+    transform: translateX(0);
   }
 
   .admin-nav,
   .admin-sidebar-bottom {
-    display: none;
+    display: block;
   }
 
   .admin-main {
-    padding: 20px;
+    padding: 60px 18px 20px;
   }
 
   .users-header {
@@ -890,4 +898,219 @@
   .user-summary {
     grid-template-columns: 1fr;
   }
+}
+
+/* ==========================================
+   MODAL GESTIÓN DE USUARIO
+   ========================================== */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+}
+
+.modal-overlay.visible {
+  display: flex;
+}
+
+.modal-usuario {
+  width: 92%;
+  max-width: 680px;
+  max-height: 90vh;
+  overflow-y: auto;
+  border: 1px solid #1a271d;
+  border-radius: 18px;
+  background: #0c120e;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
+  animation: modalSlideIn 0.25s ease;
+}
+
+@keyframes modalSlideIn {
+  from { opacity: 0; transform: translateY(20px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.modal-usuario-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 24px 25px;
+  border-bottom: 1px solid #18231b;
+}
+
+.modal-usuario-header h3 {
+  margin: 6px 0 4px;
+  color: #e9eee9;
+  font-size: 20px;
+}
+
+.modal-usuario-header p {
+  margin: 0;
+  color: #59665e;
+  font-size: 10px;
+}
+
+.modal-usuario-saldo {
+  min-width: 110px;
+  padding: 12px 14px;
+  border: 1px solid #203023;
+  border-radius: 10px;
+  background: #101811;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.modal-usuario-saldo span {
+  display: block;
+  color: #59665e;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.modal-usuario-saldo strong {
+  display: block;
+  margin-top: 4px;
+  color: #91ff66;
+  font-size: 22px;
+}
+
+.modal-usuario-saldo small {
+  color: #59665e;
+  font-size: 8px;
+}
+
+.modal-usuario-tabs {
+  display: flex;
+  border-bottom: 1px solid #18231b;
+}
+
+.modal-tab {
+  flex: 1;
+  padding: 14px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: #66736a;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.modal-tab:hover {
+  color: #9aa7a0;
+}
+
+.modal-tab.active {
+  color: #91ff66;
+  border-bottom-color: #91ff66;
+}
+
+.modal-tab-content {
+  display: none;
+  padding: 22px 25px;
+}
+
+.modal-tab-content.active {
+  display: block;
+}
+
+.modal-balance {
+  padding: 16px;
+  border: 1px solid #1b281e;
+  border-radius: 10px;
+  background: #0d140f;
+  margin-bottom: 18px;
+}
+
+.modal-balance span {
+  display: block;
+  color: #66736a;
+  font-size: 9px;
+  letter-spacing: 1px;
+}
+
+.modal-balance strong {
+  display: block;
+  margin-top: 4px;
+  color: #91ff66;
+  font-size: 28px;
+}
+
+.modal-balance small {
+  color: #59665e;
+  font-size: 8px;
+}
+
+.points-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.points-row input {
+  flex: 1;
+}
+
+.points-row button {
+  flex-shrink: 0;
+}
+
+.modal-usuario-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.modal-usuario-actions .delete-button {
+  margin-left: auto;
+}
+
+.modal-summary {
+  padding: 12px;
+  border: 1px solid #18231b;
+  border-radius: 8px;
+  background: #0d140f;
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modal-summary span {
+  color: #59665e;
+  font-size: 10px;
+}
+
+.modal-summary strong {
+  color: #dce5de;
+  font-size: 14px;
+}
+
+.modal-usuario-close {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-top: 1px solid #18231b;
+  background: transparent;
+  color: #66736a;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.modal-usuario-close:hover {
+  color: #91ff66;
 }

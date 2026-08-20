@@ -10,8 +10,9 @@
 {% block content %}
 
 <div class="dashboard">
-
-    <aside class="sidebar">
+    <div class="mobile-overlay" id="mobile-overlay"></div>
+    <button class="mobile-hamburger" id="mobile-hamburger" aria-label="Abrir menú">&#9776;</button>
+    <aside class="sidebar" id="mobile-sidebar">
 
         <div class="sidebar-brand">
             <div class="sidebar-logo">
@@ -547,5 +548,15 @@
     </main>
 
 </div>
-
+<script>
+(function(){
+    var h=document.getElementById("mobile-hamburger");
+    var s=document.getElementById("mobile-sidebar");
+    var o=document.getElementById("mobile-overlay");
+    if(h&&s&&o){
+        h.addEventListener("click",function(){s.classList.toggle("mobile-open");o.classList.toggle("active");});
+        o.addEventListener("click",function(){s.classList.remove("mobile-open");o.classList.remove("active");});
+    }
+})();
+</script>
 {% endblock %}

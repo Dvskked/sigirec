@@ -10,8 +10,10 @@
 
 {% block content %}
 <div class="admin-dashboard">
+    <div class="mobile-overlay" id="mobile-overlay"></div>
+    <button class="mobile-hamburger" id="mobile-hamburger" aria-label="Abrir menú">&#9776;</button>
 
-    <aside class="admin-sidebar">
+    <aside class="admin-sidebar" id="mobile-sidebar">
         <div class="admin-brand">
             <div class="admin-logo">
                 <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo SIGIREC">
@@ -252,6 +254,18 @@
 
     </main>
 </div>
+
+<script>
+(function(){
+    var h=document.getElementById("mobile-hamburger");
+    var s=document.getElementById("mobile-sidebar");
+    var o=document.getElementById("mobile-overlay");
+    if(h&&s&&o){
+        h.addEventListener("click",function(){s.classList.toggle("mobile-open");o.classList.toggle("active");});
+        o.addEventListener("click",function(){s.classList.remove("mobile-open");o.classList.remove("active");});
+    }
+})();
+</script>
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
