@@ -433,12 +433,29 @@ def api_escanear():
 
 
         # =====================================================
+        # REDIMENSIONAR PARA ACELERAR YOLO
+        # =====================================================
+
+        h_img, w_img = frame.shape[:2]
+        max_dim = 640
+
+        if max(h_img, w_img) > max_dim:
+            scale = max_dim / max(h_img, w_img)
+            frame = cv2.resize(
+                frame,
+                (int(w_img * scale), int(h_img * scale)),
+                interpolation=cv2.INTER_AREA
+            )
+
+
+        # =====================================================
         # ANALIZAR CON YOLO
         # =====================================================
 
         resultados = model(
             frame,
-            conf=0.15
+            conf=0.15,
+            verbose=False
         )
 
         resultado = resultados[0]
