@@ -1,1 +1,0 @@
-# Paquete principal del backend.
