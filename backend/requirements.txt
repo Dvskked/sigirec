@@ -1,0 +1,11 @@
+# Backend - Finanzas Personales
+# Instalar con: pip install -r requirements.txt
+
+Flask>=3.0,<4
+flask-cors>=4.0,<5
+mysql-connector-python>=9.0,<10
+pandas>=2.2,<3.1
+scikit-learn>=1.5,<2
+bcrypt>=4.2,<6
+gunicorn>=22,<24
+python-dotenv>=1.0,<2
