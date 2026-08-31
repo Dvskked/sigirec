@@ -1,0 +1,31 @@
+{
+  "name": "sigirec",
+  "version": "1.0.0",
+  "description": "Sistema de Gestión de Reciclaje Inteligente",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder"
+  },
+  "build": {
+    "appId": "com.sigirec.app",
+    "productName": "SigiRec",
+    "files": [
+      "main.js",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "dist/app",
+        "to": "python_dist/app"
+      }
+    ],
+    "win": {
+      "target": "nsis"
+    }
+  },
+  "devDependencies": {
+    "electron": "^44.0.0",
+    "electron-builder": "^24.13.3"
+  }
+}
